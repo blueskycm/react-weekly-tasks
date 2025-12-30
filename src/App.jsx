@@ -1,7 +1,7 @@
 import { HashRouter, Routes, Route, Link } from 'react-router-dom';
-import Week1 from './pages/week1'; // 引入剛剛寫好的 Week1 頁面
+import Week1 from './pages/week1';
 
-// 這是首頁元件 (Home)
+// 首頁元件
 function Home() {
   return (
     <div className="container mt-5">
@@ -10,12 +10,11 @@ function Home() {
           React 作業集
         </div>
         <div className="card-body">
-          <h5 className="card-title">歡迎來到作業首頁</h5>
-          <p className="card-text">請點擊下方按鈕查看本週進度。</p>
+          <h5 className="card-title">作業首頁</h5>
+          <p className="card-text">點擊下方按鈕查看作業進度。</p>
           
-          {/* 這裡使用 Link 來切換頁面，不要用 <a href> */}
           <Link to="/week1" className="btn btn-primary btn-lg">
-            前往 Week 1 主線任務
+            前往 主線任務 Week 1
           </Link>
         </div>
       </div>
@@ -23,7 +22,7 @@ function Home() {
   );
 }
 
-// 這是主程式，負責管理路由
+// 路由位置
 function App() {
   return (
     <HashRouter>
