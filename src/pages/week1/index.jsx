@@ -65,9 +65,9 @@ function Week1() {
   };
   // 定義貨幣圖示
   const currencyIcons = {
-    "崇高石": "/images/崇高石.png",
-    "神聖石": "/images/神聖石.png",
-    "混沌石": "/images/混沌石.png"
+    "崇高石": "images/崇高石.png",
+    "神聖石": "images/神聖石.png",
+    "混沌石": "images/混沌石.png"
   };
   const CurrencyDisplay = ({ price, unit }) => {
     const iconPath = currencyIcons[unit];
