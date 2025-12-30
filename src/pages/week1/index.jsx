@@ -1,0 +1,201 @@
+import { useState } from 'react';
+
+function Week1() {
+  // 產品資料
+  const products = [
+    {
+      category: "胸甲",
+      content: "福爾驍勇善戰，登基稱王。\n奈何治國無方，終至滅亡。",
+      description: "護甲值: 577|能量護盾: 201|需求 等級 59, 52 力量, 52 智慧|增加 194%護甲值和能量護盾|減少 25% 最大魔力|+17% 混沌抗性|暴擊時有 25% 機率獲得一個暴擊球",
+      id: "-L9tH8jxVb2Ka_DYPwng",
+      is_enabled: 1,
+      origin_price: 500,
+      price: 400,
+      rarity: "Unique",
+      title: "福爾的戰鎧\n鎧甲法衣",
+      unit: "崇高石",
+      num: 10,
+      imageUrl: "/images/VollsProtector.png",
+      imagesUrl: [
+        "/images/vols-detail-1.jpg",
+      ],
+    },
+    {
+      category: "魔符",
+      content: "",
+      description: "物理傷害: 474 到 848|暴擊率: 8.00%|每秒攻擊次數: 1.25|需求 等級 79, 100 力量, 67 智慧|增加 36%物理傷害|命定: 增加 40%完全破甲的效果|+12 層最大盛怒|增加 244%物理傷害|+182 命中值|+27 點力量|以 9.08% 物理傷害偷取生命|以 8.14% 物理傷害偷取魔力|附加 43 至 72 物理傷害",
+      id: "-McJ-VvcwfN1_Ye_NtVA",
+      is_enabled: 1,
+      origin_price: 120,
+      price: 100,
+      rarity: "Rare",
+      title: "遺忘模仿\n聖賢魔符",
+      unit: "神聖石",
+      num: 1,
+      imageUrl: "/images/聖賢魔符.png",
+      imagesUrl: [
+        "/images/遺忘模仿聖賢魔符-detail-1.jpg",
+      ],
+    },
+    {
+      category: "頭盔",
+      content: "冰霜嚴寒，他的赤足傷痕佈滿，雷霆萬鈞，他的心念無法動彈，惡火猛烈，情人容顏化為飛灰，此時他才終於奮起復仇，猛攻不退。 - 薩恩的維多里奧著作「獵龍記」",
+      description: "閃避值: 126|能量護盾: 51|物品等級: 79|需求 等級 45, 36 敏捷, 36 智慧|增加 45%閃避和能量護盾|+10% 全元素抗性|擊中造成的火焰傷害貢獻至感電機率，而非易燃和點燃幅度|擊中造成的冰冷傷害貢獻至易燃和點燃幅度，而非冰緩幅度或冰凍累積|擊中的閃電傷害貢獻至冰凍累積，而非感電機率",
+      id: "-McJ-VyqaFlLzUMmpPpm",
+      is_enabled: 1,
+      origin_price: 2,
+      price: 1,
+      rarity: "Unique",
+      title: "三龍戰紀\n堅固之面",
+      unit: "混沌石",
+      num: 15,
+      imageUrl: "/images/TheThreeDragons.png",
+      imagesUrl: [
+        "/images/三龍戰紀堅固之面-detail-1.jpg",
+      ],
+    },
+  ];
+
+  // 定義稀有度對照表
+  const rarityMap = {
+    Normal: { label: "一般", color: "#C8C8C8", textColor: "#000" }, // 白裝
+    Magic:  { label: "魔法", color: "#8888FF", textColor: "#FFF" }, // 藍裝
+    Rare:   { label: "稀有", color: "#FFFF77", textColor: "#000" }, // 黃裝
+    Unique: { label: "傳奇", color: "#AF6025", textColor: "#FFF" }  // 橘裝
+  };
+  // 定義貨幣圖示
+  const currencyIcons = {
+    "崇高石": "/images/崇高石.png",
+    "神聖石": "/images/神聖石.png",
+    "混沌石": "/images/混沌石.png"
+  };
+  const CurrencyDisplay = ({ price, unit }) => {
+    const iconPath = currencyIcons[unit];
+    return (
+      <span className="d-flex align-items-center justify-content-end">
+        {price}
+        {iconPath && (
+          <img 
+            src={iconPath} 
+            alt={unit} 
+            style={{ width: '24px', height: '24px', marginLeft: '6px', marginRight: '2px' }} 
+          />
+        )}
+        {unit}
+      </span>
+    );
+  };
+
+  // 使用者點了哪個產品
+  const [tempProduct, setTempProduct] = useState(null);
+
+  const currentRarity = tempProduct 
+    ? (rarityMap[tempProduct.rarity] || rarityMap.Normal) 
+    : rarityMap.Normal;
+
+  return (
+    
+    <div className="container-fluid mt-5 px-5">
+        <div className="row">
+            {/* 左側：產品列表 */}
+            <div className="col-md-6">
+                <h2 className="mb-3">商品列表</h2>
+                <table className="table table-hover">
+                    <thead>
+                    <tr>
+                        <th scope="col">商品名稱</th>
+                        <th scope="col" className="text-end">原價</th>
+                        <th scope="col" className="text-end">售價</th>
+                        <th scope="col" className="text-end">是否啟用</th>
+                        <th scope="col" className="text-end">查看細節</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {products.map((item) => (
+                        <tr key={item.id}>
+                        <td>{item.title}</td>
+                        <td className="text-end">
+                            <CurrencyDisplay price={item.origin_price} unit={item.unit} />
+                        </td>
+                        <td className="text-end">
+                            <CurrencyDisplay price={item.price} unit={item.unit} />
+                        </td>
+                        <td className="text-end">
+                            {item.is_enabled ? (
+                            <span className="text-success fw-bold">啟用</span>
+                            ) : (
+                            <span>未啟用</span>
+                            )}
+                        </td>
+                        <td className="text-end">
+                            {/* 點擊按鈕，更新 tempProduct */}
+                            <button
+                            className="btn btn-primary btn-sm"
+                            onClick={() => setTempProduct(item)}
+                            >
+                            查看細節
+                            </button>
+                        </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* 右側：產品細節 */}
+            <div className="col-md-6">
+                <h2 className="mb-3">單一物品細節</h2>
+                {tempProduct ? (
+                    <div className="card mb-3">
+                    <img 
+                        src={tempProduct.imageUrl} 
+                        className="card-img-top primary-image" 
+                        alt={tempProduct.title} 
+                        style={{ height: '300px', objectFit: 'contain', width: '100%' }}
+                        />
+                    <div className="card-body">
+                        <h5 className="card-title">
+                            {tempProduct.title}
+                            <span className="badge ms-2" style={{ backgroundColor: currentRarity.color, color: currentRarity.textColor, border: '1px solid #333'}}>
+                                {tempProduct.category}
+                            </span>
+                        </h5>
+                        <p className="card-text">
+                            物品稀有度：
+                            <span style={{ color: currentRarity.color, fontWeight: 'bold' }}>{currentRarity.label}</span>
+                        </p>
+                        <p className="card-text">物品描述：{tempProduct.description}</p>
+                        <p className="card-text">物品內容：{tempProduct.content}</p>
+                        <div className="d-flex">
+                            <p className="card-text text-secondary">
+                                <del>{tempProduct.origin_price}</del>
+                            </p>
+                            <p className="card-text ms-2 fw-bold">
+                                <CurrencyDisplay price={tempProduct.price} unit={tempProduct.unit} />
+                            </p>
+                        </div>
+                    </div>
+                    <div className="card-footer d-flex flex-wrap">
+                        {tempProduct.imagesUrl?.map((url, index) => (
+                            <img 
+                                key={index} 
+                                src={url} 
+                                alt="" 
+                                className="img-thumbnail me-2" 
+                                style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+                            />
+                        ))}
+                    </div>
+                </div>
+                ) : (
+                <div className="alert alert-secondary">
+                    請選擇一個商品查看
+                </div>
+                )}
+            </div>
+        </div>
+    </div>
+  );
+}
+
+export default Week1;
