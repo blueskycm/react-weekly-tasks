@@ -15,9 +15,9 @@ function Week1() {
       title: "福爾的戰鎧\n鎧甲法衣",
       unit: "崇高石",
       num: 10,
-      imageUrl: "/images/VollsProtector.png",
+      imageUrl: "images/VollsProtector.png",
       imagesUrl: [
-        "/images/vols-detail-1.jpg",
+        "images/vols-detail-1.jpg",
       ],
     },
     {
@@ -32,9 +32,9 @@ function Week1() {
       title: "遺忘模仿\n聖賢魔符",
       unit: "神聖石",
       num: 1,
-      imageUrl: "/images/聖賢魔符.png",
+      imageUrl: "images/聖賢魔符.png",
       imagesUrl: [
-        "/images/遺忘模仿聖賢魔符-detail-1.jpg",
+        "images/遺忘模仿聖賢魔符-detail-1.jpg",
       ],
     },
     {
@@ -49,9 +49,9 @@ function Week1() {
       title: "三龍戰紀\n堅固之面",
       unit: "混沌石",
       num: 15,
-      imageUrl: "/images/TheThreeDragons.png",
+      imageUrl: "images/TheThreeDragons.png",
       imagesUrl: [
-        "/images/三龍戰紀堅固之面-detail-1.jpg",
+        "images/三龍戰紀堅固之面-detail-1.jpg",
       ],
     },
   ];
