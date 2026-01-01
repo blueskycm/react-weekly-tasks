@@ -94,12 +94,12 @@ function Week1() {
     : rarityMap.Normal;
 
   return (
-    <div className="container-fluid mt-5 px-5">
+    <div className="container-fluid mt-5 px-3 px-lg-5">
       <div className="row align-items-start">
         {/* 左側：產品列表 */}
         <div className="col-12 col-lg-7" style={{ minWidth: 0 }}>
           <h2 className="mb-3">商品列表</h2>
-          <div className="w-100 overflow-hidden">
+          <div className="table-responsive">
             <table className="table table-hover align-middle w-100" style={{ tableLayout: 'fixed' }}>
               <thead>
                 <tr>
@@ -174,7 +174,13 @@ function Week1() {
               </div>
               <div className="card-footer d-flex flex-wrap">
                 {tempProduct.imagesUrl?.map((url, index) => (
-                  <img key={index} src={url} alt="" className="img-thumbnail me-2" style={{ width: '100px', height: '100px', objectFit: 'cover' }}/>
+                  <img 
+                  key={url} 
+                  src={url} 
+                  alt={`${tempProduct.title} ${index + 1}`} 
+                  className="img-thumbnail me-2" 
+                  style={{ height: '100px', width: 'auto' }}
+                  />
                 ))}
               </div>
             </div>
