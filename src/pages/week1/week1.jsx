@@ -97,10 +97,10 @@ function Week1() {
     <div className="container-fluid mt-5 px-3 px-lg-5">
       <div className="row align-items-start">
         {/* 左側：產品列表 */}
-        <div className="col-12 col-lg-7" style={{ minWidth: 0 }}>
+        <div className="col-lg-6" style={{ minWidth: 0 }}>
           <h2 className="mb-3">商品列表</h2>
           <div className="table-responsive">
-            <table className="table table-hover align-middle w-100" style={{ tableLayout: 'fixed', minWidth: '800px' }}>
+            <table className="table table-hover align-middle w-100">
               <thead>
                 <tr>
                   <th scope="col" className="text-nowrap">商品名稱</th>
@@ -141,7 +141,7 @@ function Week1() {
         </div>
 
         {/* 右側：產品細節 */}
-        <div className="col-12 col-lg-5" style={{ minWidth: 0 }}>
+        <div className="col-lg-6" style={{ minWidth: 0 }}>
           <h2 className="mb-3">單一物品細節</h2>
           {tempProduct ? (
             <div className="card mb-3 w-100">

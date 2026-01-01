@@ -1,5 +1,6 @@
 import { HashRouter, Routes, Route, Link } from 'react-router-dom';
-import Week1 from './pages/week1';
+import Week1 from './pages/week1/week1';
+import Week2 from './pages/week2/week2';
 
 // 首頁元件
 function Home() {
@@ -7,15 +8,22 @@ function Home() {
     <div className="container mt-5">
       <div className="card text-center shadow-sm">
         <div className="card-header bg-primary text-white">
-          React 作業集
+          2025 React 作業集
         </div>
         <div className="card-body">
           <h5 className="card-title">作業首頁</h5>
           <p className="card-text">點擊下方按鈕查看作業進度。</p>
           
-          <Link to="/week1" className="btn btn-primary btn-lg">
-            前往 主線任務 Week 1
-          </Link>
+          <div className="d-grid gap-3 col-6 mx-auto">
+            <Link to="/week1" className="btn btn-primary btn-lg">
+              前往 主線任務 Week 1
+            </Link>
+
+            <Link to="/week2" className="btn btn-primary btn-lg">
+              前往 主線任務 Week 2
+            </Link>
+          </div>
+
         </div>
       </div>
     </div>
@@ -32,6 +40,7 @@ function App() {
         
         {/* 當網址是 /week1 時，顯示 Week1 */}
         <Route path="/week1" element={<Week1 />} />
+        <Route path="/week2" element={<Week2 />} />
       </Routes>
     </HashRouter>
   );
