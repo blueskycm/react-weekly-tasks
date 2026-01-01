@@ -100,7 +100,7 @@ function Week1() {
         <div className="col-12 col-lg-7" style={{ minWidth: 0 }}>
           <h2 className="mb-3">商品列表</h2>
           <div className="table-responsive">
-            <table className="table table-hover align-middle w-100" style={{ tableLayout: 'fixed' }}>
+            <table className="table table-hover align-middle w-100" style={{ tableLayout: 'fixed', minWidth: '800px' }}>
               <thead>
                 <tr>
                   <th scope="col" className="text-nowrap">商品名稱</th>
