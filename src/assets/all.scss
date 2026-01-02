@@ -13,4 +13,35 @@ body {
     background-color: #212529;
     color: #f8f9fa;
   }
+
+  /* Bootstrap 卡片深色樣式 */
+  .card {
+    background-color: #343a40;
+    color: #f8f9fa;
+    border-color: #495057;
+  }
+
+  /* 強制修正表格深色背景 */
+  .table {
+    /* 重設 Bootstrap 表格變數，設為透明讓它透出底下的深色卡片 */
+    --bs-table-bg: transparent;
+    --bs-table-striped-bg: rgba(255, 255, 255, 0.05); /* 若有斑馬紋，設為微亮 */
+    
+    color: #f8f9fa;
+    border-color: #495057;
+
+    /* 強制移除表頭(th)與單元格(td)的預設白底 */
+    > :not(caption) > * > * {
+      background-color: transparent; 
+      color: #f8f9fa;
+      border-bottom-color: #495057;
+    }
+    
+    /* 修正 Hover 效果(滑鼠移上去時不要變回白色) */
+    &.table-hover > tbody > tr:hover > * {
+      background-color: rgba(255, 255, 255, 0.1); /* 微微的亮光就好 */
+      color: #f8f9fa;
+      box-shadow: none; /* 移除原本 Bootstrap 可能加的陰影 */
+    }
+  }
 }
