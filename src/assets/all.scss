@@ -1,0 +1,16 @@
+
+
+/* 預設樣式 (對應系統設定為 淺色 時) */
+body {
+  background-color: #ffffff;
+  color: #212529;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 偵測系統深色模式 (Dark Mode) */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #212529;
+    color: #f8f9fa;
+  }
+}
