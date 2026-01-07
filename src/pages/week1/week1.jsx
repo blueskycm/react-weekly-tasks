@@ -144,7 +144,7 @@ function Week1() {
         <div className="col-lg-6" style={{ minWidth: 0 }}>
           <h2 className="mb-3">單一物品細節</h2>
           {tempProduct ? (
-            <div className="card mb-3 w-100">
+            <div className="card mb-3 w-100 border-secondary">
               <img src={tempProduct.imageUrl} className="card-img-top primary-image" alt={tempProduct.title} style={{ height: '200px', objectFit: 'contain', width: '100%' }}/>
               <div className="card-body">
                 <h5 className="card-title mb-2">
