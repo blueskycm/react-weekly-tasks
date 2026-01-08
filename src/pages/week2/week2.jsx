@@ -107,9 +107,60 @@ function Week2() {
       const res = await axios.get(`${API_BASE}/api/${API_PATH}/admin/products`);
       setProducts(res.data.products);
     } catch (err) {
-      console.error(err);
+      if (err.response && err.response.status === 401) {
+        setIsAuth(false);
+      }
     }
   };
+
+  // 檢查登入狀態
+  // 獨立出來，方便在 useEffect 或其他地方重複呼叫
+  const checkAdmin = async () => {
+    const token = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("hexToken="))
+      ?.split("=")[1];
+
+    if (!token) return;
+
+    try {
+      axios.defaults.headers.common["Authorization"] = token;
+      await axios.post(`${API_BASE}/api/user/check`);
+      
+      // 驗證成功
+      setIsAuth(true);
+      getData(); // 確保驗證過後才拉資料
+    } catch (err) {
+      // 驗證失敗，清除狀態
+      setIsAuth(false);
+    }
+  };
+
+  // 執行登入流程
+  const login = async () => {
+    try {
+      const res = await axios.post(`${API_BASE}/admin/signin`, formData);
+      const { token, expired } = res.data;
+      
+      // 寫入 Cookie
+      document.cookie = `hexToken=${token};expires=${new Date(expired)}; path=/`;
+      
+      // 設定 Axios 預設 Header
+      axios.defaults.headers.common["Authorization"] = token;
+
+      // 登入成功後，直接切換狀態並取得資料
+      setIsAuth(true);
+      getData();
+
+    } catch (err) {
+      alert("登入失敗: " + (err.response?.data?.message || "未知錯誤"));
+    }
+  };
+
+  // 畫面初始載入時，檢查一次登入狀態
+  useEffect(() => {
+    checkAdmin();
+  }, []);
 
   // 計算當前選中商品的稀有度(API還不能新增鍵值)
   const currentRarity = tempProduct 
