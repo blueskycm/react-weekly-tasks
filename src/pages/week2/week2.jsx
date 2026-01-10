@@ -45,7 +45,7 @@ function Week2() {
             style={{ width: '24px', height: '24px', marginLeft: '6px', marginRight: '2px', objectFit: 'contain' }} 
           />
         )}
-        {/* ✨ 修改：原本是 text-muted (深灰)，改成 text-white-50 (半透明白) */}
+        {/* text-white-50 (半透明白) */}
         <span className="text-white-50 ms-1" style={{ fontSize: '0.9rem' }}>
           {currentUnit}
         </span>

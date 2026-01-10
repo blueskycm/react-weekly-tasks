@@ -44,4 +44,63 @@ body {
       box-shadow: none; /* 移除原本 Bootstrap 可能加的陰影 */
     }
   }
+
+
+  /* 👇👇👇 新增：Modal 彈窗深色模式修正 👇👇👇 */
+  
+  /* 1. Modal 本體背景與文字 */
+  .modal-content {
+    background-color: #343a40; /* 與 Card 同色 */
+    color: #f8f9fa;
+    border-color: #495057;
+  }
+
+  /* 2. Modal 頭尾的分隔線顏色 */
+  .modal-header,
+  .modal-footer {
+    border-color: #495057;
+  }
+
+  /* 3. 修正關閉按鈕 (X) 的顏色為白色 */
+  .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+  }
+
+  /* 4. 輸入框 (Input / Select / Textarea) 深色化 */
+  .form-control,
+  .form-select {
+    background-color: #212529; /* 比卡片再深一點，區分輸入區 */
+    color: #f8f9fa;
+    border-color: #495057;
+
+    &:focus {
+      background-color: #212529; /* 聚焦時維持深色 */
+      color: #f8f9fa;
+      border-color: #86b7fe; /* 保持 Bootstrap 聚焦藍框 */
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+    &::placeholder {
+      color: #adb5bd; /* 提示字改淡灰 */
+    }
+    
+    /* 修正下拉選單的選項背景 (避免展開後是白的) */
+    option {
+        background-color: #343a40;
+        color: #f8f9fa;
+    }
+  }
+
+  /* 5. 輸入框群組 (Input Group) 的附屬按鈕/文字 */
+  .input-group-text {
+    background-color: #343a40;
+    color: #f8f9fa;
+    border-color: #495057;
+  }
+
+  /* 6. Disabled 狀態的輸入框 */
+  .form-control:disabled, .form-select:disabled {
+    background-color: #2c3034;
+    opacity: 1;
+  }
 }

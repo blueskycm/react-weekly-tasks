@@ -1,6 +1,7 @@
 import { HashRouter, Routes, Route, Link } from 'react-router-dom';
 import Week1 from './pages/week1/week1';
 import Week2 from './pages/week2/week2';
+import Week3 from './pages/week3/week3';
 
 // 首頁元件
 function Home() {
@@ -22,6 +23,10 @@ function Home() {
             <Link to="/week2" className="btn btn-primary btn-lg">
               前往 主線任務 Week 2
             </Link>
+
+            <Link to="/week3" className="btn btn-primary btn-lg">
+              前往 主線任務 Week 3
+            </Link>
           </div>
 
         </div>
@@ -41,6 +46,7 @@ function App() {
         {/* 當網址是 /week1 時，顯示 Week1 */}
         <Route path="/week1" element={<Week1 />} />
         <Route path="/week2" element={<Week2 />} />
+        <Route path="/week3" element={<Week3 />} />
       </Routes>
     </HashRouter>
   );
