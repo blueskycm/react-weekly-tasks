@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-
+import { Link } from "react-router-dom";
 // 匯入
 import { rarityMap } from "../../utils/constants";
 import CurrencyDisplay from "../../components/CurrencyDisplay";
@@ -165,9 +165,9 @@ function Week3() {
           {/* 頂部 Navbar */}
           <div className="d-flex justify-content-end align-items-center bg-dark text-white p-3 mb-4 rounded shadow-sm gap-3">
             {/* 1. 回首頁按鈕 */}
-            <a href="/" className="btn btn-outline-light btn-sm d-flex align-items-center gap-1 text-decoration-none">
+            <Link to="/" className="btn btn-outline-light btn-sm d-flex align-items-center gap-1 text-decoration-none">
               <i className="bi bi-house-door-fill"></i> 回首頁
-            </a>
+            </Link>
             
             {/* 顯示 Email */}
             <div className="d-flex align-items-center text-light">
