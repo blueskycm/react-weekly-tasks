@@ -246,7 +246,7 @@ function Week3() {
                   </tbody>
                 </table>
               </div>
-              <p className="text-muted mt-2">目前有 {products.length} 項產品</p>
+              <p className="text-white-25 mb-3">目前有 {products.length} 項產品</p>
             </div>
 
             {/* 右側：產品細節 */}
@@ -294,7 +294,6 @@ function Week3() {
                 </div>
               </div>
             </div>
-            
           </div>
         </div>
       )}

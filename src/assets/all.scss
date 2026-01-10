@@ -103,4 +103,26 @@ body {
     background-color: #2c3034;
     opacity: 1;
   }
+
+  /* 7. 修正 Chrome/Edge 自動填入 (Autofill) 的白底問題 */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus, 
+  input:-webkit-autofill:active {
+      /* 使用內陰影 (inset) 強制蓋過瀏覽器的白底 */
+      /* 色碼 #212529 對應您上面設定的 input 背景色 */
+      -webkit-box-shadow: 0 0 0 30px #212529 inset !important;
+      
+      /* 強制文字顏色變白 */
+      -webkit-text-fill-color: #f8f9fa !important;
+      
+      /* 維持邊框顏色 */
+      border-color: #495057;
+      
+      /* 避免瀏覽器背景切換動畫 */
+      transition: background-color 5000s ease-in-out 0s;
+      
+      /* 修正文字大小可能會跑掉的問題 */
+      font-size: 1rem !important; 
+  }
 }
