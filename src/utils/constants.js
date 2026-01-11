@@ -6,7 +6,7 @@ export const rarityMap = {
   Unique: { label: "傳奇", value: "Unique", color: "#AF6025", textColor: "#FFF" }
 };
 
-// 類標籤
+// 分類標籤
 export const suggestedCategories = ["頭盔", "胸甲", "手套", "鞋子", "腰帶", "武器","戒指","項鍊", "飾品", "藥劑", "通貨"];
 
 // 貨幣圖示路徑

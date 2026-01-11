@@ -16,13 +16,13 @@ function Week3() {
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalState, setModalState] = useState({ isOpen: false, type: '' });
-
   const [userEmail, setUserEmail] = useState("");
 
   // 預設空產品資料
   const emptyProduct = {
     title: "", category: "", rarity: "Normal", origin_price: 0, price: 0,
     unit: "", description: "", content: "", is_enabled: 1, imageUrl: "", imagesUrl: [],
+    quantity: 1
   };
 
   const [tempProduct, setTempProduct] = useState(emptyProduct);
@@ -50,7 +50,26 @@ function Week3() {
   const getData = async () => {
     try {
       const res = await axios.get(`${API_BASE}/api/${API_PATH}/admin/products`);
-      setProducts(res.data.products);
+      
+      const processedProducts = res.data.products.map(product => {
+        try {
+          // 嘗試把 content 解析成 JSON
+          const customData = JSON.parse(product.content);
+          return {
+            ...product,
+            rarity: customData.rarity || product.rarity || 'Normal',
+            quantity: customData.quantity !== undefined ? customData.quantity : 1,
+            content: customData.note || ''
+          };
+        } catch (e) {
+          return {
+            ...product,
+            quantity: 1,
+          };
+        }
+      });
+
+      setProducts(processedProducts);
     } catch (err) {
       console.error(err);
     }
@@ -108,7 +127,18 @@ function Week3() {
   const updateProduct = async () => {
     try {
       const cleanImages = (tempProduct.imagesUrl || []).filter(url => url.trim() !== "");
-      const productToSend = { ...tempProduct, imagesUrl: cleanImages };
+      
+      // 將 rarity, quantity, content 打包成 JSON 字串
+      const productToSend = { 
+        ...tempProduct, 
+        imagesUrl: cleanImages,
+        content: JSON.stringify({
+          rarity: tempProduct.rarity,
+          quantity: tempProduct.quantity,
+          note: tempProduct.content
+        })
+      };
+
       let api = `${API_BASE}/api/${API_PATH}/admin/product`;
       let method = "post";
       if (modalState.type === 'edit') {
@@ -118,7 +148,7 @@ function Week3() {
       await axios[method](api, { data: productToSend });
       closeModal();
       getData();
-      if (selectedProduct && selectedProduct.id === tempProduct.id) setSelectedProduct(productToSend);
+      if (selectedProduct && selectedProduct.id === tempProduct.id) setSelectedProduct(tempProduct);
       alert(modalState.type === 'create' ? "新增成功" : "更新成功");
     } catch (err) {
       alert("操作失敗: " + (err.response?.data?.message || err.message));
@@ -164,7 +194,7 @@ function Week3() {
 
           {/* 頂部 Navbar */}
           <div className="d-flex justify-content-end align-items-center bg-dark text-white p-3 mb-4 rounded shadow-sm gap-3">
-            {/* 1. 回首頁按鈕 */}
+            {/* 回首頁按鈕 */}
             <Link to="/" className="btn btn-outline-light btn-sm d-flex align-items-center gap-1 text-decoration-none">
               <i className="bi bi-house-door-fill"></i> 回首頁
             </Link>
@@ -199,6 +229,7 @@ function Week3() {
                     <tr>
                       <th scope="col" className="text-center">分類</th>
                       <th scope="col" className="text-nowrap">商品名稱</th>
+                      <th scope="col" className="text-center">數量</th>
                       <th scope="col" className="text-end">售價</th>
                       <th scope="col" className="text-center">狀態</th>
                       <th scope="col" className="text-center">操作</th>
@@ -221,6 +252,7 @@ function Week3() {
                         </td>
 
                         <td>{formatTitle(item.title)}</td>
+                        <td className="text-center">{item.quantity}</td>
                         <td className="text-end">
                           <div className="d-flex align-items-center justify-content-end gap-2">
                             <del className="text-white-50 ms-1" style={{ fontSize: '0.9rem' }}>{item.origin_price}</del>
@@ -228,7 +260,7 @@ function Week3() {
                           </div>
                         </td>
                         <td className="text-center">
-                          {item.is_enabled ? <span className="text-success fw-bold">啟用</span> : <span className="text-muted">未啟用</span>}
+                          {item.is_enabled ? <span className="text-success fw-bold">啟用</span> : <span className="text-white-50 ms-1 text-muted-dark">未啟用</span>}
                         </td>
                         <td className="text-center">
                           <div className="btn-group">
@@ -246,7 +278,7 @@ function Week3() {
                   </tbody>
                 </table>
               </div>
-              <p className="text-white-25 mb-3">目前有 {products.length} 項產品</p>
+              <p className="text-white-50 text-muted-dark mb-3">目前有 {products.length} 項產品</p>
             </div>
 
             {/* 右側：產品細節 */}
