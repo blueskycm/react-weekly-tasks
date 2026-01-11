@@ -47,11 +47,11 @@ function Week3() {
 
   useEffect(() => { checkAdmin(); }, []);
 
-  const getData = async () => {
+const getData = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/api/${API_PATH}/admin/products`);
-      
-      const processedProducts = res.data.products.map(product => {
+      const res = await axios.get(`${API_BASE}/api/${API_PATH}/admin/products/all`);
+      const productsArray = Object.values(res.data.products); 
+      const processedProducts = productsArray.map(product => {
         try {
           // 嘗試把 content 解析成 JSON
           const customData = JSON.parse(product.content);
@@ -62,6 +62,7 @@ function Week3() {
             content: customData.note || ''
           };
         } catch (e) {
+          // 如果是舊資料或解析失敗，給預設值
           return {
             ...product,
             quantity: 1,
@@ -71,7 +72,11 @@ function Week3() {
 
       setProducts(processedProducts);
     } catch (err) {
-      console.error(err);
+      if (err.response && err.response.status === 401) {
+        setIsAuth(false);
+      } else {
+        alert("取得資料失敗: " + err.message);
+      }
     }
   };
 
