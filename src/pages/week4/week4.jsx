@@ -10,7 +10,7 @@ import DeleteModal from "../../components/DeleteModal";
 const API_BASE = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
 
-function Week3() {
+function Week4() {
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [isAuth, setIsAuth] = useState(false);
   const [products, setProducts] = useState([]);
@@ -174,11 +174,11 @@ const getData = async () => {
   const formatTitle = (title) => title ? title.replace(/\\n/g, '\n') : "";
 
   return (
-    <div className="week3-container">
+    <div className="week4-container">
       {!isAuth ? (
         <div className="container login">
           <div className="row justify-content-center mt-5">
-            <h1 className="h3 mb-3 font-weight-normal text-center">Week 3 - 商品管理系統</h1>
+            <h1 className="h3 mb-3 font-weight-normal text-center">Week 4 - 商品管理系統</h1>
             <div className="col-8">
               <form id="form" className="form-signin" onSubmit={handleSubmit}>
                 <div className="form-floating mb-3">
@@ -342,4 +342,4 @@ const getData = async () => {
   );
 }
 
-export default Week3;
+export default Week4;

@@ -204,18 +204,18 @@ const ProductModal = ({ isOpen, type, tempProduct, setTempProduct, updateProduct
                   </div>
                   <div className="mb-3 col-md-6">
                     <label htmlFor="quantity" className="form-label">數量</label>
-                    <input id="quantity" type="number" className="form-control" name="quantity" min="1" value={tempProduct.quantity} onChange={handleChange} placeholder="請輸入數量"/>
+                    <input id="quantity" type="number" className="form-control" name="quantity" min="0" value={tempProduct.quantity} onChange={handleChange} placeholder="請輸入數量"/>
                   </div>
                 </div>
 
                 <div className="row">
                   <div className="mb-3 col-md-6">
                     <label htmlFor="origin_price" className="form-label">原價</label>
-                    <input id="origin_price" type="number" className="form-control" name="origin_price" value={tempProduct.origin_price} onChange={handleChange} />
+                    <input id="origin_price" type="number" className="form-control" name="origin_price" min="0" value={tempProduct.origin_price} onChange={handleChange} />
                   </div>
                   <div className="mb-3 col-md-6">
                     <label htmlFor="price" className="form-label">售價</label>
-                    <input id="price" type="number" className="form-control" name="price" value={tempProduct.price} onChange={handleChange} />
+                    <input id="price" type="number" className="form-control" name="price"  min="0"  value={tempProduct.price} onChange={handleChange} />
                   </div>
                 </div>
                 <hr />
