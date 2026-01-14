@@ -23,6 +23,9 @@ function Home() {
               <p className="card-text">
                 熟悉 React 基礎環境，建立第一個元件，學習如何使用 map 渲染列表資料。
               </p>
+              <Link to="/week1" className="btn btn-outline-primary w-100 stretched-link">
+                查看作業
+              </Link>
             </div>
           </div>
         </div>

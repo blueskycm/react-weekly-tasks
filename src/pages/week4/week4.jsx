@@ -302,7 +302,12 @@ const getData = async (page = 1) => {
                   </tbody>
                 </table>
               </div>
-              <p className="text-white-50 text-muted-dark mb-3">目前有 {products.length} 項產品</p>
+              <p className="text-white-50 text-muted-dark mb-3">
+                本頁顯示 {products.length} 筆資料，
+                <span className="ms-2">
+                  第 {pageInfo.current_page || 1} 頁 / 共 {pageInfo.total_pages || 1} 頁
+                </span>
+              </p>
               <div className="d-flex justify-content-center mt-4">
                 <Pagination pageInfo={pageInfo} handlePageChange={getData} />
               </div>
