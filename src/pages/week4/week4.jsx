@@ -6,6 +6,7 @@ import { rarityMap } from "../../utils/constants";
 import CurrencyDisplay from "../../components/CurrencyDisplay";
 import ProductModal from "../../components/ProductModal";
 import DeleteModal from "../../components/DeleteModal";
+import Pagination from "../../components/Pagination";
 
 const API_BASE = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -17,6 +18,7 @@ function Week4() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalState, setModalState] = useState({ isOpen: false, type: '' });
   const [userEmail, setUserEmail] = useState("");
+  const [pageInfo, setPageInfo] = useState({});
 
   // 預設空產品資料
   const emptyProduct = {
@@ -47,9 +49,9 @@ function Week4() {
 
   useEffect(() => { checkAdmin(); }, []);
 
-const getData = async () => {
+const getData = async (page = 1) => {
     try {
-      const res = await axios.get(`${API_BASE}/api/${API_PATH}/admin/products/all`);
+      const res = await axios.get(`${API_BASE}/api/${API_PATH}/admin/products?page=${page}`);
       const productsArray = Object.values(res.data.products); 
       const processedProducts = productsArray.map(product => {
         try {
@@ -59,18 +61,19 @@ const getData = async () => {
             ...product,
             rarity: customData.rarity || product.rarity || 'Normal',
             quantity: customData.quantity !== undefined ? customData.quantity : 1,
-            content: customData.note || ''
+            content: customData.note || '',
+            isDeleted: customData.isDeleted || false
           };
         } catch (e) {
           // 如果是舊資料或解析失敗，給預設值
-          return {
-            ...product,
-            quantity: 1,
-          };
+          return { ...product, quantity: 1, isDeleted: false };
         }
-      });
+      })
+      // 只保留沒有被標記為刪除的商品
+      .filter(product => !product.isDeleted);
 
       setProducts(processedProducts);
+      setPageInfo(res.data.pagination);
     } catch (err) {
       if (err.response && err.response.status === 401) {
         setIsAuth(false);
@@ -140,7 +143,8 @@ const getData = async () => {
         content: JSON.stringify({
           rarity: tempProduct.rarity,
           quantity: tempProduct.quantity,
-          note: tempProduct.content
+          note: tempProduct.content,
+          isDeleted: false
         })
       };
 
@@ -152,7 +156,7 @@ const getData = async () => {
       }
       await axios[method](api, { data: productToSend });
       closeModal();
-      getData();
+      getData(pageInfo.current_page);
       if (selectedProduct && selectedProduct.id === tempProduct.id) setSelectedProduct(tempProduct);
       alert(modalState.type === 'create' ? "新增成功" : "更新成功");
     } catch (err) {
@@ -162,10 +166,25 @@ const getData = async () => {
 
   const deleteProduct = async () => {
     try {
-      await axios.delete(`${API_BASE}/api/${API_PATH}/admin/product/${tempProduct.id}`);
+      const productToDelete = {
+        ...tempProduct,
+        content: JSON.stringify({
+          rarity: tempProduct.rarity,
+          quantity: tempProduct.quantity,
+          note: tempProduct.content,
+          isDeleted: true // 標記為軟刪除
+        })
+      };
+
+      await axios.put(`${API_BASE}/api/${API_PATH}/admin/product/${tempProduct.id}`, {
+        data: productToDelete
+      });
+
       closeModal();
       getData();
       if (selectedProduct?.id === tempProduct.id) setSelectedProduct(null);
+      alert("商品已移至回收桶 (軟刪除成功)");
+
     } catch (err) {
       alert("刪除失敗: " + err.message);
     }
@@ -284,6 +303,9 @@ const getData = async () => {
                 </table>
               </div>
               <p className="text-white-50 text-muted-dark mb-3">目前有 {products.length} 項產品</p>
+              <div className="d-flex justify-content-center mt-4">
+                <Pagination pageInfo={pageInfo} handlePageChange={getData} />
+              </div>
             </div>
 
             {/* 右側：產品細節 */}
@@ -337,7 +359,7 @@ const getData = async () => {
 
       {/* --- Modal 元件 --- */}
       <ProductModal isOpen={modalState.isOpen && (modalState.type === 'create' || modalState.type === 'edit')} type={modalState.type} tempProduct={tempProduct} setTempProduct={setTempProduct} updateProduct={updateProduct} onClose={closeModal} />
-      <DeleteModal isOpen={modalState.isOpen && modalState.type === 'delete'} product={tempProduct} deleteProduct={deleteProduct} onClose={closeModal} />
+      <DeleteModal isOpen={modalState.isOpen && modalState.type === 'delete'} product={tempProduct} deleteProduct={deleteProduct} onClose={closeModal} description="此為軟刪除，資料庫仍保留" />
     </div>
   );
 }

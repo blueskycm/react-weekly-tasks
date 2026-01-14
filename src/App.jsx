@@ -11,7 +11,7 @@ function Home() {
     <div className="container py-5">
       <div className="text-center mb-5">
         <h1 className="display-4 fw-bold">React 作品實戰作業集</h1>
-        <p className="lead text-muted">2025 冬季班 - 阿葆的學習歷程</p>
+        <p className="lead text-muted-dark">2025 冬季班 - 阿葆的學習歷程</p>
       </div>
 
       <div className="row g-4">
@@ -23,9 +23,6 @@ function Home() {
               <p className="card-text">
                 熟悉 React 基礎環境，建立第一個元件，學習如何使用 map 渲染列表資料。
               </p>
-              <Link to="/week1" className="btn btn-outline-primary w-100 stretched-link">
-                查看作業
-              </Link>
             </div>
           </div>
         </div>

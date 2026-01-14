@@ -125,4 +125,40 @@ body {
       /* 修正文字大小可能會跑掉的問題 */
       font-size: 1rem !important; 
   }
+
+    /* 8. 深色模式分頁按鈕 (Dark Pagination) */
+  .pagination-dark {
+    // 1. 一般狀態：深灰底、淺灰框、白字
+    .page-link {
+      background-color: #2b3035; 
+      border-color: #495057;    
+      color: #dee2e6;  
+      &:focus {
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); // 保持 Focus 光暈
+        background-color: #2b3035; 
+        color: #fff;
+      }
+    }
+
+    // 2. 滑鼠懸停 (Hover)：稍微變亮
+    .page-link:hover {
+      background-color: #373b3e; 
+      border-color: #495057;
+      color: #fff;
+    }
+
+    // 3. 啟用狀態 (Active)：維持藍色，但邊框要修飾
+    .page-item.active .page-link {
+      background-color: #0d6efd; 
+      border-color: #0d6efd;
+      color: #fff;
+    }
+
+    // 4. 禁用狀態 (Disabled)：更深的背景、灰色字
+    .page-item.disabled .page-link {
+      background-color: #212529; 
+      border-color: #495057;
+      color: #6c757d; 
+    }
+  }
 }
