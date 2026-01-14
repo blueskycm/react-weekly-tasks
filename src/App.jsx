@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { HashRouter, Routes, Route, Link } from 'react-router-dom';
 import Week1 from './pages/week1/week1';
 import Week2 from './pages/week2/week2';
@@ -81,12 +80,6 @@ function Home() {
 
 // 路由位置
 function App() {
-  useEffect(() => {
-    // 修改 html 標籤的 lang 屬性
-    document.documentElement.lang = 'zh-TW';
-    // 改標題
-    document.title = "阿葆的 2025 React 作業集"; 
-  }, []);
   return (
     <HashRouter>
       <Routes>
