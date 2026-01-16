@@ -29,21 +29,33 @@ function Week4() {
 
   const [tempProduct, setTempProduct] = useState(emptyProduct);
 
+  const [isLoading, setIsLoading] = useState(true);
+
   // --- 初始化與驗證 ---
   const checkAdmin = async () => {
-    const token = document.cookie.replace(/(?:(?:^|.*;\s*)hexToken\s*=\s*([^;]*).*$)|^.*$/, "$1");
-    const savedEmail = localStorage.getItem("poe_email");
-    if (savedEmail) setUserEmail(savedEmail);
-
-    if (token) {
-      axios.defaults.headers.common["Authorization"] = token;
-      try {
-        await axios.post(`${API_BASE}/api/user/check`);
-        setIsAuth(true);
-        getData();
-      } catch (err) {
+    try {
+      const token = document.cookie.replace(/(?:(?:^|.*;\s*)hexToken\s*=\s*([^;]*).*$)|^.*$/, "$1");
+      // 如果連 token 都沒有，直接視為未登入，結束 loading
+      if (!token) {
         setIsAuth(false);
+        setIsLoading(false); // 結束讀取
+        return;
       }
+      
+      axios.defaults.headers.common['Authorization'] = token;
+      
+      await axios.post(`${API_BASE}/api/user/check`);
+      
+      // 驗證成功
+      setIsAuth(true);
+      getData(); // 取得產品列表
+      
+    } catch (err) {
+      // 驗證失敗
+      setIsAuth(false);
+    } finally {
+      // 無論成功或失敗，最後都要把 Loading 關掉
+      setIsLoading(false); 
     }
   };
 
@@ -192,6 +204,18 @@ const getData = async (page = 1) => {
 
   const formatTitle = (title) => title ? title.replace(/\\n/g, '\n') : "";
 
+  // 如果正在讀取，顯示 Loading 畫面
+  if (isLoading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center bg-body" style={{ height: '100vh' }}>
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+        <span className="ms-3 text-body">Loading...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="week4-container">
       {!isAuth ? (
@@ -215,14 +239,12 @@ const getData = async (page = 1) => {
         </div>
       ) : (
         <div className="container-fluid mt-5 px-3 px-lg-5">
-
           {/* 頂部 Navbar */}
           <div className="d-flex justify-content-end align-items-center bg-dark text-white p-3 mb-4 rounded shadow-sm gap-3">
             {/* 回首頁按鈕 */}
             <Link to="/" className="btn btn-outline-light btn-sm d-flex align-items-center gap-1 text-decoration-none">
               <i className="bi bi-house-door-fill"></i> 回首頁
             </Link>
-            
             {/* 顯示 Email */}
             <div className="d-flex align-items-center text-light">
               <i className="bi bi-envelope-fill me-2 text-warning"></i>
@@ -230,7 +252,6 @@ const getData = async (page = 1) => {
                 {userEmail || "管理員"}
               </span>
             </div>
-
             {/* 登出按鈕 */}
             <button className="btn btn-outline-danger btn-sm d-flex align-items-center gap-1" onClick={handleLogout}>
               <i className="bi bi-box-arrow-right"></i> 登出

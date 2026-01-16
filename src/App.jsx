@@ -1,3 +1,4 @@
+import { useEffect, useLayoutEffect } from 'react';
 import { HashRouter, Routes, Route, Link } from 'react-router-dom';
 import Week1 from './pages/week1/week1';
 import Week2 from './pages/week2/week2';
@@ -80,6 +81,19 @@ function Home() {
 
 // 路由位置
 function App() {
+  // 偵測系統主題，使用 useLayoutEffect 以確保在畫面渲染前就執行，避免閃白
+  useLayoutEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    // 設定主題的函式
+    const applyTheme = (e) => {
+      const newTheme = e.matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-bs-theme', newTheme);
+    };
+    applyTheme(mediaQuery);
+    mediaQuery.addEventListener('change', applyTheme);
+    return () => mediaQuery.removeEventListener('change', applyTheme);
+  }, []);
+
   return (
     <HashRouter>
       <Routes>
