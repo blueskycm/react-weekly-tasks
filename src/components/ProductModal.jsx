@@ -1,13 +1,20 @@
 import { useEffect, useRef, useMemo } from "react";
 import * as bootstrap from "bootstrap";
+import axios from "axios";
 import Select from 'react-select';
 import { rarityMap, suggestedCategories, currencyIcons } from "../utils/constants";
+
+const API_BASE = import.meta.env.VITE_BASE_URL;
+const API_PATH = import.meta.env.VITE_API_PATH;
 
 const ProductModal = ({ isOpen, type, tempProduct, setTempProduct, updateProduct, onClose }) => {
   const modalRef = useRef(null);
   const modalInstance = useRef(null);
+  
+  // 建立兩個 Ref
+  const fileInputRef = useRef(null);
+  const uploadTargetRef = useRef("");
 
-  // react-select 選項
   const currencyOptions = useMemo(() => (
     Object.keys(currencyIcons).map(currencyName => ({
       value: currencyName,
@@ -15,11 +22,7 @@ const ProductModal = ({ isOpen, type, tempProduct, setTempProduct, updateProduct
       icon: currencyIcons[currencyName]
     }))
   ), []);
-
-  // 找出當前選中的選項物件
   const selectedCurrency = currencyOptions.find(option => option.value === tempProduct.unit);
-
-  // 自訂 react-select 樣式
   const customStyles = {
     control: (provided, state) => ({
       ...provided,
@@ -48,13 +51,8 @@ const ProductModal = ({ isOpen, type, tempProduct, setTempProduct, updateProduct
       display: 'flex',
       alignItems: 'center'
     }),
-    input: (provided) => ({
-      ...provided,
-      color: '#fff'
-    })
+    input: (provided) => ({ ...provided, color: '#fff' })
   };
-
-  // 自訂選項顯示 (圖片 + 文字)
   const formatOptionLabel = ({ label, icon }) => (
     <div className="d-flex align-items-center">
       <img src={icon} alt={label} style={{ width: '20px', height: '20px', marginRight: '8px', objectFit: 'contain' }} />
@@ -62,7 +60,7 @@ const ProductModal = ({ isOpen, type, tempProduct, setTempProduct, updateProduct
     </div>
   );
 
-  // Modal 初始化與開關
+  // Modal 初始化
   useEffect(() => {
     modalInstance.current = new bootstrap.Modal(modalRef.current, { backdrop: 'static' });
   }, []);
@@ -72,32 +70,74 @@ const ProductModal = ({ isOpen, type, tempProduct, setTempProduct, updateProduct
     else modalInstance.current.hide();
   }, [isOpen]);
 
-  // 整合所有 Input 函式
+  // 一般欄位變更處理
   const handleChange = (valueOrEvent, meta) => {
-    // 情況1: React-Select 觸發 (有 meta)
     if (meta && meta.name) {
       const name = meta.name;
       const value = valueOrEvent ? valueOrEvent.value : '';
       setTempProduct(prev => ({ ...prev, [name]: value }));
       return;
     }
-
-    // 情況2: 原生 Input 觸發 (有 target)
     if (valueOrEvent && valueOrEvent.target) {
       const { name, value, type, checked } = valueOrEvent.target;
       let finalValue = value;
-
-      if (type === 'checkbox') {
-        finalValue = checked ? 1 : 0;
-      } else if (type === 'number') {
-        finalValue = Number(value);
-      }
-
+      if (type === 'checkbox') finalValue = checked ? 1 : 0;
+      else if (type === 'number') finalValue = Number(value);
       setTempProduct(prev => ({ ...prev, [name]: finalValue }));
     }
   };
 
-  // 圖片陣列處理 (維持獨立，因為結構較複雜)
+  // 觸發上傳的函式 (設定目標 -> 點擊隱藏 Input)
+  const handleTriggerUpload = (target) => {
+    uploadTargetRef.current = target; // 紀錄目標: 'main' 或 0, 1, 2...
+    fileInputRef.current.click();     // 觸發點擊
+  };
+
+  // 實際執行上傳與驗證
+  const uploadFile = async () => {
+    const file = fileInputRef.current.files[0];
+    if (!file) return;
+
+    // --- 驗證邏輯 ---
+    const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
+      alert("格式錯誤：僅限使用 jpg、jpeg 與 png 格式");
+      fileInputRef.current.value = ""; // 清空
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) { // 檢查檔案大小 < 3MB = 3 * 1024 * 1024 bytes
+      alert("檔案過大：限制為 3MB 以下");
+      fileInputRef.current.value = "";
+      return;
+    }
+    // ----------------
+
+    const formData = new FormData();
+    formData.append("file-to-upload", file);
+
+    try {
+      const res = await axios.post(`${API_BASE}/api/${API_PATH}/admin/upload`, formData);
+      const uploadedUrl = res.data.imageUrl;
+
+      // --- 判斷要更新哪裡 ---
+      if (uploadTargetRef.current === 'main') {
+        // 更新主圖
+        setTempProduct(prev => ({ ...prev, imageUrl: uploadedUrl }));
+      } else {
+        // 更新附圖 (index)
+        const index = uploadTargetRef.current;
+        const newImages = [...tempProduct.imagesUrl];
+        newImages[index] = uploadedUrl;
+        setTempProduct(prev => ({ ...prev, imagesUrl: newImages }));
+      }
+
+      fileInputRef.current.value = ""; // 清空 input 以便下次能選同檔名
+    } catch (err) {
+      alert("圖片上傳失敗: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  // 附圖：手動輸入網址變更
   const handleImagesChange = (e, index) => {
     const { value } = e.target;
     const newImages = [...tempProduct.imagesUrl];
@@ -105,11 +145,13 @@ const ProductModal = ({ isOpen, type, tempProduct, setTempProduct, updateProduct
     setTempProduct((prev) => ({ ...prev, imagesUrl: newImages }));
   };
 
+  // 附圖：新增欄位
   const handleAddImage = () => {
     const newImages = [...(tempProduct.imagesUrl || []), ""];
     setTempProduct((prev) => ({ ...prev, imagesUrl: newImages }));
   };
 
+  // 附圖：移除欄位
   const handleRemoveImage = (index) => {
     const newImages = [...tempProduct.imagesUrl];
     newImages.splice(index, 1);
@@ -128,14 +170,43 @@ const ProductModal = ({ isOpen, type, tempProduct, setTempProduct, updateProduct
             <div className="row">
               {/* 左側圖片區 */}
               <div className="col-sm-4">
+                <input 
+                  type="file" 
+                  className="d-none" 
+                  ref={fileInputRef} 
+                  onChange={uploadFile} 
+                  accept=".jpg,.jpeg,.png"
+                />
+
+                <div className="alert alert-secondary p-2 mb-3" style={{ fontSize: '0.85rem' }}>
+                  <i className="bi bi-info-circle me-1"></i>
+                  圖片支援網址輸入或上傳。<br/>
+                  僅限 <strong>jpg, jpeg, png</strong> 格式，<strong>3MB</strong> 以下。
+                </div>
+
                 <div className="mb-4">
                   <h5 className="border-bottom pb-2">主要圖片</h5>
                   <div className="mb-3">
                     <label htmlFor="imageUrl" className="form-label">圖片連結</label>
-                    <input id="imageUrl" type="text" className="form-control mb-2" name="imageUrl" placeholder="請輸入主圖連結" value={tempProduct.imageUrl} onChange={handleChange}/>
+                    <div className="input-group mb-2">
+                      <input 
+                        id="imageUrl" 
+                        type="text" 
+                        className="form-control" 
+                        name="imageUrl" 
+                        placeholder="請輸入主圖連結" 
+                        value={tempProduct.imageUrl} 
+                        onChange={handleChange}
+                      />
+                      {/* 呼叫 handleTriggerUpload('main') */}
+                      <button className="btn btn-primary" type="button" onClick={() => handleTriggerUpload('main')}>
+                        上傳
+                      </button>
+                    </div>
                     {tempProduct.imageUrl ? <img className="img-fluid rounded" src={tempProduct.imageUrl} alt="主要圖片" /> : <div className="bg-light text-secondary rounded d-flex align-items-center justify-content-center" style={{ height: '200px' }}>尚無圖片</div>}
                   </div>
                 </div>
+                
                 {/* 副圖區塊 */}
                 <div>
                   <h5 className="border-bottom pb-2">多圖設置</h5>
@@ -143,14 +214,26 @@ const ProductModal = ({ isOpen, type, tempProduct, setTempProduct, updateProduct
                     <div key={index} className="mb-3">
                       <label htmlFor={`imagesUrl-${index}`} className="form-label">副圖 {index + 1}</label>
                       <div className="input-group mb-2">
-                        <input id={`imagesUrl-${index}`} type="text" className="form-control" placeholder={`圖片連結 ${index + 1}`} value={url} onChange={(e) => handleImagesChange(e, index)}/>
+                        <input 
+                          id={`imagesUrl-${index}`} 
+                          type="text" 
+                          className="form-control" 
+                          placeholder={`圖片連結 ${index + 1}`} 
+                          value={url} 
+                          onChange={(e) => handleImagesChange(e, index)}
+                        />
+                        {/* 呼叫 handleTriggerUpload(index) */}
+                        <button className="btn btn-outline-primary" type="button" onClick={() => handleTriggerUpload(index)}>
+                          上傳
+                        </button>
                         <button type="button" className="btn btn-outline-danger" onClick={() => handleRemoveImage(index)}>x</button>
                       </div>
                       {url && <img className="img-fluid rounded mb-2" src={url} alt={`副圖 ${index + 1}`} />}
                     </div>
                   ))}
+                  
                   {!tempProduct.imagesUrl?.length || tempProduct.imagesUrl[tempProduct.imagesUrl.length - 1] ? 
-                    <button className="btn btn-outline-primary btn-sm d-block w-100" onClick={handleAddImage}>新增圖片</button> : 
+                    <button className="btn btn-outline-primary btn-sm d-block w-100" onClick={handleAddImage}>新增圖片欄位</button> : 
                     <div className="alert alert-warning py-2 text-center" style={{ fontSize: '0.9rem' }}>請先填寫上方圖片連結</div>
                   }
                 </div>
