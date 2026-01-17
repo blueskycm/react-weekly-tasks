@@ -7,6 +7,7 @@ import CurrencyDisplay from "../../components/CurrencyDisplay";
 import ProductModal from "../../components/ProductModal";
 import DeleteModal from "../../components/DeleteModal";
 import Pagination from "../../components/Pagination";
+import Login from "../../components/Login";
 
 const API_BASE = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -219,23 +220,8 @@ const getData = async (page = 1) => {
   return (
     <div className="week4-container">
       {!isAuth ? (
-        <div className="container login">
-          <div className="row justify-content-center mt-5">
-            <h1 className="h3 mb-3 font-weight-normal text-center">Week 4 - 商品管理系統</h1>
-            <div className="col-8">
-              <form id="form" className="form-signin" onSubmit={handleSubmit}>
-                <div className="form-floating mb-3">
-                  <input type="email" className="form-control" name="username" placeholder="name@example.com" value={formData.username} onChange={handleInputChange} required autoFocus />
-                  <label className="text-white-50" htmlFor="username">Email address</label>
-                </div>
-                <div className="form-floating">
-                  <input type="password" className="form-control" name="password" placeholder="Password" value={formData.password} onChange={handleInputChange} required />
-                  <label className="text-white-50" htmlFor="password">Password</label>
-                </div>
-                <button className="btn btn-lg btn-primary w-100 mt-3" type="submit">登入</button>
-              </form>
-            </div>
-          </div>
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '80vh' }}>
+          <Login formData={formData} handleInputChange={handleInputChange} handleLogin={handleSubmit}/>
         </div>
       ) : (
         <div className="container-fluid mt-5 px-3 px-lg-5">
