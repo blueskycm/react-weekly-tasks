@@ -2,12 +2,11 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 // 匯入
-import { rarityMap } from "../../utils/constants";
-import CurrencyDisplay from "../../components/CurrencyDisplay";
 import ProductModal from "../../components/ProductModal";
 import DeleteModal from "../../components/DeleteModal";
-import Pagination from "../../components/Pagination";
 import Login from "../../components/Login";
+import ProductTable from "../../components/ProductTable";
+import ProductDetail from "../../components/ProductDetail";
 
 const API_BASE = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -177,26 +176,44 @@ const getData = async (page = 1) => {
     }
   };
 
-  const deleteProduct = async () => {
+  // 軟刪除
+  const handleSoftDelete = async () => {
     try {
-      const productToDelete = {
+      const productToTrash = {
         ...tempProduct,
         content: JSON.stringify({
           rarity: tempProduct.rarity,
           quantity: tempProduct.quantity,
           note: tempProduct.content,
-          isDeleted: true // 標記為軟刪除
+          isDeleted: true // 標記為刪除
         })
       };
-
+      
+      // 使用 PUT 更新
       await axios.put(`${API_BASE}/api/${API_PATH}/admin/product/${tempProduct.id}`, {
-        data: productToDelete
+        data: productToTrash
       });
 
       closeModal();
-      getData();
+      getData(pageInfo.current_page); // 重新整理
       if (selectedProduct?.id === tempProduct.id) setSelectedProduct(null);
-      alert("商品已移至回收桶 (軟刪除成功)");
+      alert("商品已移至回收桶！(軟刪除)");
+
+    } catch (err) {
+      alert("移至回收桶失敗: " + err.message);
+    }
+  };
+
+  // 硬刪除
+  const handleHardDelete = async () => {
+    try {
+      // 使用 DELETE API 真實刪除
+      await axios.delete(`${API_BASE}/api/${API_PATH}/admin/product/${tempProduct.id}`);
+
+      closeModal();
+      getData(pageInfo.current_page); // 重新整理
+      if (selectedProduct?.id === tempProduct.id) setSelectedProduct(null);
+      alert("商品已永久刪除！(硬刪除)");
 
     } catch (err) {
       alert("刪除失敗: " + err.message);
@@ -245,133 +262,32 @@ const getData = async (page = 1) => {
           </div>
 
           <div className="row align-items-start">
-            {/* 左側：產品列表 */}
-            <div className="col-lg-6 mb-3" style={{ minWidth: 0 }}>
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h2>商品列表</h2>
-                <div>
-                  <button className="btn btn-primary me-2" onClick={() => openProductModal('create')}>建立新商品</button>
-                </div>
-              </div>
+            {/* 左側：商品列表 */}
+            <ProductTable 
+              products={products}
+              pageInfo={pageInfo}
+              handlePageChange={getData}
+              openProductModal={openProductModal}
+              openDeleteModal={openDeleteModal}
+              selectedProduct={selectedProduct}
+              setSelectedProduct={setSelectedProduct}
+            />
 
-              <div className="table-responsive">
-                <table className="table table-hover align-middle">
-                  <thead>
-                    <tr>
-                      <th scope="col" className="text-center">分類</th>
-                      <th scope="col" className="text-nowrap">商品名稱</th>
-                      <th scope="col" className="text-center">數量</th>
-                      <th scope="col" className="text-end">售價</th>
-                      <th scope="col" className="text-center">狀態</th>
-                      <th scope="col" className="text-center">操作</th>
-                      <th scope="col" className="text-center">細節</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {products.map((item) => (
-                      <tr key={item.id}>
-                        <td className="text-center">
-                          {(() => {
-                            const rarityKey = item.rarity || "Normal";
-                            const rarityConfig = rarityMap[rarityKey] || rarityMap.Normal;
-                            return (
-                              <span className="badge border" style={{ backgroundColor: rarityConfig.color, color: rarityConfig.textColor, fontSize: '0.9rem', textShadow: '0 0 2px rgba(0,0,0,0.5)' }}>
-                                {item.category}
-                              </span>
-                            );
-                          })()}
-                        </td>
-
-                        <td>{formatTitle(item.title)}</td>
-                        <td className="text-center">{item.quantity}</td>
-                        <td className="text-end">
-                          <div className="d-flex align-items-center justify-content-end gap-2">
-                            <del className="text-white-50 ms-1" style={{ fontSize: '0.9rem' }}>{item.origin_price}</del>
-                            <CurrencyDisplay price={item.price} unit={item.unit} />
-                          </div>
-                        </td>
-                        <td className="text-center">
-                          {item.is_enabled ? <span className="text-success fw-bold">啟用</span> : <span className="text-white-50 ms-1 text-muted-dark">未啟用</span>}
-                        </td>
-                        <td className="text-center">
-                          <div className="btn-group">
-                            <button type="button" className="btn btn-outline-primary btn-sm" onClick={() => openProductModal('edit', item)}>編輯</button>
-                            <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => openDeleteModal(item)}>刪除</button>
-                          </div>
-                        </td>
-                        <td className="text-center">
-                          <button className={`btn btn-sm ${selectedProduct?.id === item.id ? 'btn-secondary' : 'btn-outline-primary'}`} onClick={() => setSelectedProduct(item)}>
-                            查看
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <p className="text-white-50 text-muted-dark mb-3">
-                本頁顯示 {products.length} 筆資料，
-                <span className="ms-2">
-                  第 {pageInfo.current_page || 1} 頁 / 共 {pageInfo.total_pages || 1} 頁
-                </span>
-              </p>
-              <div className="d-flex justify-content-center mt-4">
-                <Pagination pageInfo={pageInfo} handlePageChange={getData} />
-              </div>
-            </div>
-
-            {/* 右側：產品細節 */}
-            <div className="col-lg-6" style={{ minWidth: 0 }}>
-              <div className="card shadow-sm border-0 h-100">
-                <div className="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
-                  <h4 className="mb-0">商品卡片預覽</h4>
-                </div>
-                <div className="card-body">
-                    {selectedProduct ? (
-                      <div className="card mb-3 w-100 border-secondary">
-                        <img src={selectedProduct.imageUrl} className="card-img-top primary-image bg-dark" alt={selectedProduct.title} style={{ height: '300px', objectFit: 'contain', width: '100%' }} />
-                        <div className="card-body">
-                          <h5 className="card-title mb-2 d-flex align-items-center">
-                              <div style={{ whiteSpace: 'pre-line' }}>{formatTitle(selectedProduct.title)}</div>
-                              <span className="badge ms-2" style={{ backgroundColor: (rarityMap[selectedProduct.rarity] || rarityMap.Normal).color, color: (rarityMap[selectedProduct.rarity] || rarityMap.Normal).textColor, border: '1px solid #333' }}>
-                                {selectedProduct.category}
-                              </span>
-                          </h5>
-                          <p className="card-text">
-                            物品稀有度：
-                            <span style={{ color: (rarityMap[selectedProduct.rarity] || rarityMap.Normal).color, fontWeight: 'bold' }}>
-                              {(rarityMap[selectedProduct.rarity] || rarityMap.Normal).label}
-                            </span>
-                          </p>
-                          <p className="card-text" style={{ whiteSpace: 'pre-line' }}>物品描述：{'\n'}{formatTitle(selectedProduct.description)}</p>
-                          <p className="card-text" style={{ whiteSpace: 'pre-line' }}>額外說明：{'\n'}{formatTitle(selectedProduct.content)}</p>
-                          <div className="d-flex align-items-center">
-                            <p className="card-text mb-0 me-2">售價：</p>
-                            <p className="card-text text-secondary mb-0 text-decoration-line-through me-2">{selectedProduct.origin_price}</p>
-                            <p className="card-text mb-0 fw-bold fs-5"><CurrencyDisplay price={selectedProduct.price} unit={selectedProduct.unit} /></p>
-                          </div>
-                        </div>
-                        {selectedProduct.imagesUrl && selectedProduct.imagesUrl.length > 0 && (
-                          <div className="card-footer d-flex flex-wrap border-secondary gap-2">
-                            {selectedProduct.imagesUrl.map((url, index) => (
-                              url ? <img key={index} src={url} alt={`${selectedProduct.title} ${index + 1}`} className="img-thumbnail bg-dark border-secondary" style={{ height: '80px', width: 'auto' }} /> : null
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="alert alert-secondary w-100">請選擇一個商品查看</div>
-                    )}
-                </div>
-              </div>
-            </div>
+            {/* 右側：商品細節 */}
+            <ProductDetail selectedProduct={selectedProduct} />
           </div>
         </div>
       )}
 
       {/* --- Modal 元件 --- */}
       <ProductModal isOpen={modalState.isOpen && (modalState.type === 'create' || modalState.type === 'edit')} type={modalState.type} tempProduct={tempProduct} setTempProduct={setTempProduct} updateProduct={updateProduct} onClose={closeModal} />
-      <DeleteModal isOpen={modalState.isOpen && modalState.type === 'delete'} product={tempProduct} deleteProduct={deleteProduct} onClose={closeModal} description="此為軟刪除，資料庫仍保留" />
+      <DeleteModal 
+        isOpen={modalState.isOpen && modalState.type === 'delete'} 
+        product={tempProduct} 
+        onSoftDelete={handleSoftDelete}
+        onHardDelete={handleHardDelete}
+        onClose={closeModal} 
+      />
     </div>
   );
 }
