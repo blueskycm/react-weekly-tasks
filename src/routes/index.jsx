@@ -18,6 +18,9 @@ import ShopCart from '../pages/week5/Cart';
 // Week 5 後台
 import Admin from '../pages/week5/Admin';
 
+// 404
+import NotFound from '../pages/NotFound';
+
 const router = createHashRouter([
   {
     path: '/',
@@ -42,10 +45,11 @@ const router = createHashRouter([
           { path: 'products/:id', element: <ShopProductDetail /> }, // 產品細節
           { path: 'cart', element: <ShopCart /> }, // 購物車
 
-          // 如果想把後台放在這裡也可以，或者拉出去獨立
+          //後台
           { path: 'admin', element: <Admin /> },
         ]
       },
+      { path: '*', element: <NotFound /> },
     ]
   }
 ]);
