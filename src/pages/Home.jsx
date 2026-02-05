@@ -7,6 +7,9 @@ const weeksData = [
   { id: 'week4', title: 'Week 4', path: '/week4', description: '元件化' },
   { id: 'week5', title: 'Week 5', path: '/week5', description: '前台購物車系統' },
   { id: 'week5-admin', title: 'Week 5 (後台)', path: '/week5/admin', description: '後台管理介面' },
+  // Week 6
+  { id: 'week6', title: 'Week 6 (交易所)', path: '/week6', description: '前台購物車系統' },
+  { id: 'week6-admin', title: 'Week 6 (後台)', path: '/week6/admin', description: '後台管理介面 (進階)' },
 ];
 
 export default function Home() {

@@ -2,9 +2,9 @@ import { NavLink } from "react-router-dom";
 
 export default function Navbar() {
   const routes = [
-    { path: "/week5", name: "商場首頁" },
-    { path: "/week5/products", name: "產品列表" },
-    { path: "/week5/cart", name: "購物車" },
+    { path: "/week6", name: "商場首頁" },
+    { path: "/week6/products", name: "產品列表" },
+    { path: "/week6/cart", name: "購物車" },
   ];
 
   return (
@@ -18,7 +18,7 @@ export default function Navbar() {
                 <NavLink
                   className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
                   to={route.path}
-                  end={route.path === "/week5"}
+                  end={route.path === "/week6"}
                 >
                   {route.name}
                 </NavLink>

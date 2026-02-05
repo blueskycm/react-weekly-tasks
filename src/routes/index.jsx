@@ -18,9 +18,22 @@ import ShopCart from '../pages/week5/Cart';
 // Week 5 後台
 import Admin from '../pages/week5/Admin';
 
+// Week 6 商店
+import Week6ShopHome from '../pages/week6/Home';
+import Week6Products from '../pages/week6/Products';
+import Week6ProductDetail from '../pages/week6/ProductDetail';
+import Week6Cart from '../pages/week6/Cart';
+import Week6Checkout from '../pages/week6/Checkout';
+
+// Week 6 後台
+import Week6Admin from '../pages/week6/Admin';
+import AdminExchange from '../pages/week6/AdminExchange';
+import Exchange from '../pages/week6/Exchange';
+
 // 404
 import NotFound from '../pages/NotFound';
 
+const EXCHANGE_PATH = import.meta.env.VITE_EXCHANGE_API || 'exchange';
 const router = createHashRouter([
   {
     path: '/',
@@ -47,6 +60,23 @@ const router = createHashRouter([
 
           //後台
           { path: 'admin', element: <Admin /> },
+        ]
+      },
+      // === Week 6 路由 ===
+      {
+        path: 'week6',
+        element: <FrontLayout />, // 或是你有專用的 AdminLayout
+        children: [
+          { path: EXCHANGE_PATH, element: <Exchange /> },
+          // 後台路由
+          { path: 'admin', element: <Week6Admin /> },
+          { path: 'admin/exchange', element: <AdminExchange /> },
+          // 商店頁面
+          { index: true, element: <Week6ShopHome /> },
+          { path: 'products', element: <Week6Products /> },
+          { path: 'products/:id', element: <Week6ProductDetail /> },
+          { path: 'cart', element: <Week6Cart /> },
+          { path: 'checkout', element: <Week6Checkout /> },
         ]
       },
       { path: '*', element: <NotFound /> },
