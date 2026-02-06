@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import LoadingOverlay from "../../components/LoadingOverlay";
+import CurrencyDisplay from "../../components/CurrencyDisplay";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -12,22 +13,23 @@ export default function Checkout() {
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
 
-	// 1. 初始化 React Hook Form
+	// 接收購物車傳來的 "計算後金額" 與 "幣別"
+	const location = useLocation();
+	const { totalPrice, currency } = location.state || {}; // 若直接輸入網址進來，這些會是 undefined
+
 	const {
-		register, // 用來綁定 input
-		handleSubmit, // 用來處理送出
-		formState: { errors }, // 取得錯誤訊息
+		register,
+		handleSubmit,
+		formState: { errors },
 	} = useForm({
-		mode: "onTouched", // 當欄位被碰觸後就開始驗證
+		mode: "onTouched",
 	});
 
-	// 取得購物車資料 (為了顯示總金額)
 	useEffect(() => {
 		const getCart = async () => {
 			try {
 				const res = await axios.get(`${BASE_URL}/api/${API_PATH}/cart`);
 				setCart(res.data.data);
-				// 如果購物車是空的，踢回賣場
 				if (res.data.data.carts.length === 0) {
 					alert("購物車是空的，快去買點裝備吧！");
 					navigate("/week6/products");
@@ -39,10 +41,24 @@ export default function Checkout() {
 		getCart();
 	}, [navigate]);
 
-	// 2. 表單送出邏輯
 	const onSubmit = async (data) => {
 		setIsLoading(true);
 		try {
+			// 組合備註訊息 (因為 API 沒有 gameId 欄位，我們塞在 message 裡)
+			// 格式：
+			// 【訂單資訊】
+			// 遊戲ID: blueskycm#0594
+			// 支付方式: 新台幣 / 金額: 500
+			let finalMessage = `【訂單資訊】\n遊戲ID: ${data.gameId}`;
+
+			if (currency && totalPrice) {
+				finalMessage += `\n支付貨幣: ${currency}\n應付金額: ${totalPrice} (已含手續費/進位)`;
+			}
+
+			if (data.message) {
+				finalMessage += `\n\n【買家留言】\n${data.message}`;
+			}
+
 			const orderData = {
 				data: {
 					user: {
@@ -51,17 +67,14 @@ export default function Checkout() {
 						tel: data.tel,
 						address: data.address,
 					},
-					message: data.message,
+					message: finalMessage,
 				},
 			};
 
-			// 送出訂單 API
 			const res = await axios.post(`${BASE_URL}/api/${API_PATH}/order`, orderData);
 
-			// 成功後，通常會清空購物車並導向到付款頁 (或完成頁)
-			alert(`訂單建立成功！訂單編號：${res.data.orderId}`);
+			alert(`交易請求已發送！\n請留意遊戲內密語或是 Email 通知。\n\n訂單編號：${res.data.orderId}`);
 
-			// 這裡我們先導回首頁，或是你可以做一個 "Success" 頁面
 			navigate("/week6/products");
 
 		} catch (error) {
@@ -77,7 +90,7 @@ export default function Checkout() {
 
 			<h2 className="text-center mb-4">
 				<i className="bi bi-card-checklist me-2"></i>
-				填寫收件資訊
+				填寫交易資訊
 			</h2>
 
 			<div className="row justify-content-center">
@@ -90,19 +103,40 @@ export default function Checkout() {
 						<ul className="list-group list-group-flush">
 							{cart.carts?.map((item) => (
 								<li className="list-group-item d-flex justify-content-between lh-sm bg-dark text-light border-secondary" key={item.id}>
-									<div>
+									<div className="text-truncate" style={{ maxWidth: '150px' }}>
 										<h6 className="my-0">{item.product.title.split('\\n')[0]}</h6>
 										<small className="text-muted">數量: {item.qty}</small>
 									</div>
-									<span className="text-light">
-										{/* 這裡簡單顯示，如果有 CurrencyDisplay 更好 */}
-										{item.final_total} {item.product.unit}
-									</span>
+									{/* 這裡顯示原始單價 */}
+									<div className="text-end">
+										<CurrencyDisplay price={item.total} unit={item.product.unit} style={{ fontSize: '0.9rem' }} />
+									</div>
 								</li>
 							))}
-							<li className="list-group-item d-flex justify-content-between bg-dark text-white border-secondary">
-								<span>總計 (混合單位)</span>
-								<strong>{cart.final_total}</strong>
+
+							<li className="list-group-item d-flex justify-content-between align-items-center bg-dark text-white border-secondary py-3">
+								<span>總計 ({currency || "混合"})</span>
+								<div className="text-end">
+									{/* 5. 核心顯示邏輯：根據幣別切換顯示方式 */}
+									{currency && totalPrice ? (
+										currency === "新台幣" ? (
+											// 如果是台幣，顯示 NT$
+											<strong className="text-success fs-4">
+												NT$ {totalPrice}
+											</strong>
+										) : (
+											// 如果是遊戲幣，使用 CurrencyDisplay 顯示圖示
+											<CurrencyDisplay
+												price={totalPrice}
+												unit={currency}
+												style={{ fontSize: '1.5rem', fontWeight: 'bold' }}
+											/>
+										)
+									) : (
+										// 如果沒有傳 state 過來 (直接進這頁)，顯示原始混合總計
+										<strong>{cart.final_total} (原始)</strong>
+									)}
+								</div>
 							</li>
 						</ul>
 					</div>
@@ -111,13 +145,34 @@ export default function Checkout() {
 				{/* 右側：結帳表單 */}
 				<div className="col-md-8 order-md-1">
 					<div className="card border-0 shadow-sm p-4 bg-dark text-light border border-secondary">
-						<h4 className="mb-3">藏身處資訊</h4>
+						<h4 className="mb-3">流亡者資訊</h4>
 
-						{/* 使用 handleSubmit 包裹 onSubmit */}
 						<form onSubmit={handleSubmit(onSubmit)} className="needs-validation">
-
 							<div className="row g-3">
-								{/* Email */}
+
+								{/* 遊戲 ID (必填) */}
+								<div className="col-12">
+									<label htmlFor="gameId" className="form-label text-warning fw-bold">
+										<i className="bi bi-controller me-1"></i> 遊戲 ID (Game Tag)
+									</label>
+									<input
+										type="text"
+										className={`form-control ${errors.gameId ? "is-invalid" : ""}`}
+										id="gameId"
+										placeholder="例如: blueskycm#0594" // Placeholder 提示
+										{...register("gameId", {
+											required: "遊戲 ID 為必填，否則無法交易",
+											// 可以加個簡單的正則表達式驗證是否有 # (選用)
+											pattern: {
+												value: /^.+#\d+$/,
+												message: "格式錯誤，請包含 Tag 編號 (例如 Name#1234)"
+											}
+										})}
+									/>
+									{errors.gameId && <div className="invalid-feedback">{errors.gameId.message}</div>}
+									<small className="text-muted">請務必確認 ID 正確，我們將會在遊戲內密語您。</small>
+								</div>
+
 								<div className="col-12">
 									<label htmlFor="email" className="form-label">Email</label>
 									<input
@@ -136,20 +191,18 @@ export default function Checkout() {
 									{errors.email && <div className="invalid-feedback">{errors.email.message}</div>}
 								</div>
 
-								{/* 姓名 */}
 								<div className="col-12">
-									<label htmlFor="name" className="form-label">收件人姓名</label>
+									<label htmlFor="name" className="form-label">收件人稱呼</label>
 									<input
 										type="text"
 										className={`form-control ${errors.name ? "is-invalid" : ""}`}
 										id="name"
-										placeholder="流亡者名稱"
+										placeholder="怎麼稱呼您"
 										{...register("name", { required: "姓名為必填" })}
 									/>
 									{errors.name && <div className="invalid-feedback">{errors.name.message}</div>}
 								</div>
 
-								{/* 電話 */}
 								<div className="col-12">
 									<label htmlFor="tel" className="form-label">聯絡電話</label>
 									<input
@@ -169,27 +222,26 @@ export default function Checkout() {
 									{errors.tel && <div className="invalid-feedback">{errors.tel.message}</div>}
 								</div>
 
-								{/* 地址 */}
 								<div className="col-12">
-									<label htmlFor="address" className="form-label">收件地址 (藏身處)</label>
+									<label htmlFor="address" className="form-label">交易地點 (或藏身處)</label>
 									<input
 										type="text"
 										className={`form-control ${errors.address ? "is-invalid" : ""}`}
 										id="address"
-										placeholder="奧瑞亞 聖潔大教堂 3號..."
+										defaultValue="我的藏身處 (My Hideout)"
+										placeholder="例如: 奧瑞亞, 或是 '我的藏身處'"
 										{...register("address", { required: "地址為必填" })}
 									/>
 									{errors.address && <div className="invalid-feedback">{errors.address.message}</div>}
 								</div>
 
-								{/* 留言 */}
 								<div className="col-12">
 									<label htmlFor="message" className="form-label">留言 (選填)</label>
 									<textarea
 										className="form-control"
 										id="message"
 										rows="3"
-										placeholder="交易備註，例如：請線上密我..."
+										placeholder="交易備註..."
 										{...register("message")}
 									></textarea>
 								</div>
@@ -202,7 +254,7 @@ export default function Checkout() {
 									<i className="bi bi-arrow-left"></i> 回購物車
 								</Link>
 								<button className="btn btn-primary btn-lg" type="submit" disabled={isLoading}>
-									送出訂單
+									送出交易請求
 								</button>
 							</div>
 						</form>

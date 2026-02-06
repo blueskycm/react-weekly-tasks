@@ -5,9 +5,9 @@ import CurrencyDisplay from "../../components/CurrencyDisplay";
 import LoadingOverlay from "../../components/LoadingOverlay";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
-// 1. 賣場路徑 (存取購物車用)
+// 賣場路徑 (存取購物車用)
 const SHOP_PATH = import.meta.env.VITE_API_PATH;
-// 2. 匯率路徑 (存取設定檔用)
+// 匯率路徑 (存取設定檔用)
 const EXCHANGE_PATH = import.meta.env.VITE_EXCHANGE_API;
 
 export default function Cart() {
@@ -27,7 +27,7 @@ export default function Cart() {
   // 取得購物車 (使用 SHOP_PATH)
   const getCart = async () => {
     try {
-      // 🛒 購物車是在 "lovecraft" 路徑下
+      // 購物車是在 "lovecraft" 路徑下
       const res = await axios.get(`${BASE_URL}/api/${SHOP_PATH}/cart`);
       setCart(res.data.data);
     } catch (error) {
@@ -111,7 +111,7 @@ export default function Cart() {
     }
   };
 
-  // --- 計算邏輯 (維持不變，因為邏輯是對的) ---
+  // 計算邏輯
   const cartTotalValue = useMemo(() => {
     if (!cart.carts || exchangeRates["神聖石"] === 0) return { raw: 0, ceil: 0 };
 
