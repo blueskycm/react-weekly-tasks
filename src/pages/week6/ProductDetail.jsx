@@ -12,7 +12,7 @@ export default function ProductDetail() {
   const navigate = useNavigate();
   const [product, setProduct] = useState({});
   const [qty, setQty] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
 
   // 紀錄目前顯示的大圖網址

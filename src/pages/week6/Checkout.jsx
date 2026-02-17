@@ -3,6 +3,7 @@ import axios from "axios";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import LoadingOverlay from "../../components/LoadingOverlay";
+// 1. 引入 CurrencyDisplay 元件
 import CurrencyDisplay from "../../components/CurrencyDisplay";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -13,9 +14,9 @@ export default function Checkout() {
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
 
-	// 接收購物車傳來的 "計算後金額" 與 "幣別"
+	// 接收從購物車傳過來的「計算後金額」與「幣別」
 	const location = useLocation();
-	const { totalPrice, currency } = location.state || {}; // 若直接輸入網址進來，這些會是 undefined
+	const { totalPrice, currency } = location.state || {};
 
 	const {
 		register,
@@ -44,15 +45,16 @@ export default function Checkout() {
 	const onSubmit = async (data) => {
 		setIsLoading(true);
 		try {
-			// 組合備註訊息 (因為 API 沒有 gameId 欄位，我們塞在 message 裡)
-			// 格式：
-			// 【訂單資訊】
-			// 遊戲ID: blueskycm#0594
-			// 支付方式: 新台幣 / 金額: 500
+			// 組合訂單備註：包含遊戲ID、支付幣別、金額
 			let finalMessage = `【訂單資訊】\n遊戲ID: ${data.gameId}`;
 
 			if (currency && totalPrice) {
-				finalMessage += `\n支付貨幣: ${currency}\n應付金額: ${totalPrice} (已含手續費/進位)`;
+				finalMessage += `\n支付貨幣: ${currency}\n應付金額: ${totalPrice}`;
+			}
+
+			// 如果是現金，提示後台檢查匯款
+			if (currency === "新台幣") {
+				finalMessage += `\n(請確認買家是否已回報末五碼)`;
 			}
 
 			if (data.message) {
@@ -74,7 +76,6 @@ export default function Checkout() {
 			const res = await axios.post(`${BASE_URL}/api/${API_PATH}/order`, orderData);
 
 			alert(`交易請求已發送！\n請留意遊戲內密語或是 Email 通知。\n\n訂單編號：${res.data.orderId}`);
-
 			navigate("/week6/products");
 
 		} catch (error) {
@@ -94,55 +95,98 @@ export default function Checkout() {
 			</h2>
 
 			<div className="row justify-content-center">
-				{/* 左側：訂單摘要 */}
+				{/* 左側：訂單摘要 & 付款說明 */}
 				<div className="col-md-4 order-md-2 mb-4">
-					<div className="card border-secondary shadow-sm">
+
+					{/* 1. 訂單摘要卡片 */}
+					<div className="card border-secondary shadow-sm mb-3">
 						<div className="card-header bg-secondary text-white">
 							訂單摘要
 						</div>
 						<ul className="list-group list-group-flush">
 							{cart.carts?.map((item) => (
-								<li className="list-group-item d-flex justify-content-between lh-sm bg-dark text-light border-secondary" key={item.id}>
-									<div className="text-truncate" style={{ maxWidth: '150px' }}>
+								<li className="list-group-item d-flex justify-content-between align-items-center lh-sm bg-dark text-light border-secondary" key={item.id}>
+									<div className="text-truncate" style={{ maxWidth: '140px' }}>
 										<h6 className="my-0">{item.product.title.split('\\n')[0]}</h6>
 										<small className="text-muted">數量: {item.qty}</small>
 									</div>
-									{/* 這裡顯示原始單價 */}
 									<div className="text-end">
-										<CurrencyDisplay price={item.total} unit={item.product.unit} style={{ fontSize: '0.9rem' }} />
+										{/* 2. 這裡改用 CurrencyDisplay 顯示圖示 */}
+										<CurrencyDisplay price={item.final_total} unit={item.product.unit} style={{ fontSize: '1rem' }} />
 									</div>
 								</li>
 							))}
 
 							<li className="list-group-item d-flex justify-content-between align-items-center bg-dark text-white border-secondary py-3">
-								<span>總計 ({currency || "混合"})</span>
+								<span>總計 ({currency || "原始"})</span>
 								<div className="text-end">
-									{/* 5. 核心顯示邏輯：根據幣別切換顯示方式 */}
+									{/* 3. 總計顯示邏輯：台幣顯示文字，遊戲幣顯示圖示 */}
 									{currency && totalPrice ? (
 										currency === "新台幣" ? (
-											// 如果是台幣，顯示 NT$
-											<strong className="text-success fs-4">
-												NT$ {totalPrice}
-											</strong>
+											<strong className="text-success fs-4">NT$ {totalPrice}</strong>
 										) : (
-											// 如果是遊戲幣，使用 CurrencyDisplay 顯示圖示
-											<CurrencyDisplay
-												price={totalPrice}
-												unit={currency}
-												style={{ fontSize: '1.5rem', fontWeight: 'bold' }}
-											/>
+											<div className="d-flex align-items-center justify-content-end">
+												<CurrencyDisplay
+													price={totalPrice}
+													unit={currency}
+													style={{ fontSize: '1.5rem', fontWeight: 'bold' }}
+												/>
+											</div>
 										)
 									) : (
-										// 如果沒有傳 state 過來 (直接進這頁)，顯示原始混合總計
-										<strong>{cart.final_total} (原始)</strong>
+										<strong>{cart.final_total} (未換算)</strong>
 									)}
 								</div>
 							</li>
 						</ul>
 					</div>
+
+					{/* 2. 付款方式說明卡片 */}
+					<div className="card border-info shadow-sm">
+						<div className="card-header bg-info text-dark fw-bold">
+							<i className="bi bi-info-circle-fill me-2"></i>
+							付款與交易方式
+						</div>
+						<div className="card-body bg-dark text-light border-secondary">
+							{currency === "新台幣" ? (
+								// --- 現金交易說明 ---
+								<div>
+									<h6 className="fw-bold text-warning mb-2">銀行匯款</h6>
+									<ul className="list-unstyled small mb-3 text-light opacity-75">
+										<li><strong>銀行：</strong> 玉山銀行 (808)</li>
+										<li><strong>分行：</strong> 東台南分行</li>
+										<li><strong>帳號：</strong> 0761-976-056514</li>
+										<li><strong>戶名：</strong> 陳宗葆</li>
+									</ul>
+									<div className="alert alert-dark border-secondary small">
+										<p className="mb-1 text-warning">⚠ 匯款完成後：</p>
+										<ol className="ps-3 mb-0">
+											<li>請在下方留言告知<strong>帳號末五碼</strong>。</li>
+											<li>加好友：<strong className="text-info">blueskycm#0594</strong></li>
+											<li>前往我的藏身處交易。</li>
+										</ol>
+									</div>
+								</div>
+							) : (
+								// --- 遊戲幣交易說明 ---
+								<div className="text-center py-2">
+									<p className="mb-2">請直接在遊戲內進行交易</p>
+									<div className="p-2 border border-secondary rounded bg-black mb-2">
+										ID: <strong className="text-primary fs-5">blueskycm#0594</strong>
+									</div>
+									<small className="text-muted d-block">
+										請至我的藏身處 (Hideout)
+										<br />
+										一手交錢，一手交貨。
+									</small>
+								</div>
+							)}
+						</div>
+					</div>
+
 				</div>
 
-				{/* 右側：結帳表單 */}
+				{/* 右側：表單 */}
 				<div className="col-md-8 order-md-1">
 					<div className="card border-0 shadow-sm p-4 bg-dark text-light border border-secondary">
 						<h4 className="mb-3">流亡者資訊</h4>
@@ -150,7 +194,7 @@ export default function Checkout() {
 						<form onSubmit={handleSubmit(onSubmit)} className="needs-validation">
 							<div className="row g-3">
 
-								{/* 遊戲 ID (必填) */}
+								{/* 4. 新增：遊戲 ID (必填) */}
 								<div className="col-12">
 									<label htmlFor="gameId" className="form-label text-warning fw-bold">
 										<i className="bi bi-controller me-1"></i> 遊戲 ID (Game Tag)
@@ -159,10 +203,10 @@ export default function Checkout() {
 										type="text"
 										className={`form-control ${errors.gameId ? "is-invalid" : ""}`}
 										id="gameId"
-										placeholder="例如: blueskycm#0594" // Placeholder 提示
+										placeholder="例如: blueskycm#0594"
 										{...register("gameId", {
 											required: "遊戲 ID 為必填，否則無法交易",
-											// 可以加個簡單的正則表達式驗證是否有 # (選用)
+											// 驗證是否有 #
 											pattern: {
 												value: /^.+#\d+$/,
 												message: "格式錯誤，請包含 Tag 編號 (例如 Name#1234)"
@@ -170,7 +214,7 @@ export default function Checkout() {
 										})}
 									/>
 									{errors.gameId && <div className="invalid-feedback">{errors.gameId.message}</div>}
-									<small className="text-muted">請務必確認 ID 正確，我們將會在遊戲內密語您。</small>
+									<small className="text-muted">請務必確認 ID 正確，以便我們密語您。</small>
 								</div>
 
 								<div className="col-12">
@@ -229,19 +273,19 @@ export default function Checkout() {
 										className={`form-control ${errors.address ? "is-invalid" : ""}`}
 										id="address"
 										defaultValue="我的藏身處 (My Hideout)"
-										placeholder="例如: 奧瑞亞, 或是 '我的藏身處'"
 										{...register("address", { required: "地址為必填" })}
 									/>
 									{errors.address && <div className="invalid-feedback">{errors.address.message}</div>}
 								</div>
 
 								<div className="col-12">
-									<label htmlFor="message" className="form-label">留言 (選填)</label>
+									<label htmlFor="message" className="form-label">留言 / 匯款資訊</label>
 									<textarea
 										className="form-control"
 										id="message"
 										rows="3"
-										placeholder="交易備註..."
+										// 動態提示：如果是台幣，提示輸入末五碼
+										placeholder={currency === "新台幣" ? "如果是銀行匯款，請務必在此填寫您的【帳號末五碼】..." : "交易備註..."}
 										{...register("message")}
 									></textarea>
 								</div>

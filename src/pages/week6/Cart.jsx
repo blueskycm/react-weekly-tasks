@@ -5,14 +5,15 @@ import CurrencyDisplay from "../../components/CurrencyDisplay";
 import LoadingOverlay from "../../components/LoadingOverlay";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
-// 賣場路徑 (存取購物車用)
 const SHOP_PATH = import.meta.env.VITE_API_PATH;
-// 匯率路徑 (存取設定檔用)
 const EXCHANGE_PATH = import.meta.env.VITE_EXCHANGE_API;
 
 export default function Cart() {
   const [cart, setCart] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+
+  // 下拉選單開關
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // 匯率設定狀態
   const [exchangeRates, setExchangeRates] = useState({
@@ -24,10 +25,17 @@ export default function Cart() {
 
   const [targetCurrency, setTargetCurrency] = useState("新台幣");
 
+  // 選項設定
+  const currencyOptions = [
+    { value: "新台幣", label: "新台幣 (NTD)", type: "flag", icon: "🇹🇼" },
+    { value: "神聖石", label: "神聖石 (Divine Orb)", type: "game" },
+    { value: "混沌石", label: "混沌石 (Chaos Orb)", type: "game" },
+    { value: "崇高石", label: "崇高石 (Exalted Orb)", type: "game" },
+  ];
+
   // 取得購物車 (使用 SHOP_PATH)
   const getCart = async () => {
     try {
-      // 購物車是在 "lovecraft" 路徑下
       const res = await axios.get(`${BASE_URL}/api/${SHOP_PATH}/cart`);
       setCart(res.data.data);
     } catch (error) {
@@ -38,22 +46,19 @@ export default function Cart() {
   // 取得匯率 (使用 EXCHANGE_PATH)
   const getRates = async () => {
     try {
-      // 💱 匯率設定檔是在 "exchange" 路徑下
-      // 注意：這裡我們抓的是 exchange 路徑下的「所有產品」，裡面只有神聖石、混沌石、新台幣
       const res = await axios.get(`${BASE_URL}/api/${EXCHANGE_PATH}/products/all`);
       const products = res.data.products;
 
       let newRates = {
         "崇高石": 1,
-        "神聖石": 800,
+        "神聖石": 900,
         "混沌石": 5,
         "新台幣": 5
       };
 
-      // 搜尋設定檔 (這裡不用檢查 category 也可以，因為 exchange 路徑下應該全是設定檔)
       const divine = products.find(p => p.title === "神聖石");
       const chaos = products.find(p => p.title === "混沌石");
-      const ntd = products.find(p => p.title === "新台幣"); // 記得後台要建立這個
+      const ntd = products.find(p => p.title === "新台幣");
 
       if (divine) newRates["神聖石"] = divine.price;
       if (chaos) newRates["混沌石"] = chaos.price;
@@ -75,43 +80,47 @@ export default function Cart() {
     init();
   }, []);
 
-  // 購物車操作 (使用 SHOP_PATH)
+  // 刪除單一項目
   const removeCartItem = async (cartId) => {
     setIsLoading(true);
     try {
       await axios.delete(`${BASE_URL}/api/${SHOP_PATH}/cart/${cartId}`);
-      getCart();
+      await getCart();
     } catch (error) {
       alert("刪除失敗");
+    } finally {
       setIsLoading(false);
     }
   };
 
+  // 更新數量
   const updateCartItem = async (cartId, productId, qty) => {
     setIsLoading(true);
     try {
       await axios.put(`${BASE_URL}/api/${SHOP_PATH}/cart/${cartId}`, {
         data: { product_id: productId, qty: Number(qty) }
       });
-      getCart();
+      await getCart();
     } catch (error) {
       alert("更新數量失敗");
+    } finally {
       setIsLoading(false);
     }
   };
 
+  // 清空購物車
   const removeAllCart = async () => {
     setIsLoading(true);
     try {
       await axios.delete(`${BASE_URL}/api/${SHOP_PATH}/carts`);
-      getCart();
+      await getCart();
     } catch (error) {
       alert("清空購物車失敗");
+    } finally {
       setIsLoading(false);
     }
   };
 
-  // 計算邏輯
   const cartTotalValue = useMemo(() => {
     if (!cart.carts || exchangeRates["神聖石"] === 0) return { raw: 0, ceil: 0 };
 
@@ -145,6 +154,14 @@ export default function Cart() {
   return (
     <div className="container py-5">
       <LoadingOverlay isLoading={isLoading} />
+
+      {/* 點擊空白處關閉選單的遮罩 */}
+      {isDropdownOpen && (
+        <div
+          style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 990 }}
+          onClick={() => setIsDropdownOpen(false)}
+        ></div>
+      )}
 
       <h2 className="text-center mb-4">您的戰利品</h2>
 
@@ -227,14 +244,15 @@ export default function Cart() {
 
           {/* 右側：匯率總計看板 */}
           <div className="col-lg-4">
-            <div className="card border-0 shadow-lg bg-dark text-white border border-secondary position-sticky" style={{ top: '20px' }}>
+            <div className="card border-0 shadow-lg bg-dark text-white border border-secondary position-sticky" style={{ top: '20px', zIndex: 1000 }}>
               <div className="card-header bg-primary text-white text-center py-3">
                 <h5 className="mb-0"><i className="bi bi-calculator me-2"></i>訂單結算</h5>
               </div>
 
               <div className="card-body p-4">
+                {/* 匯率資訊 */}
                 <div className="alert alert-dark border-secondary mb-4">
-                  <small className="d-block text-muted mb-2">📊 當前市集匯率 (API: {EXCHANGE_PATH})：</small>
+                  <small className="d-block text-muted mb-2">當前市集匯率 (API: {EXCHANGE_PATH})：</small>
                   <div className="d-flex justify-content-between mb-1">
                     <span>1 <span style={{ color: '#e5b847' }}>神聖石</span> =</span>
                     <span className="fw-bold">{exchangeRates["神聖石"]} 崇高石</span>
@@ -249,34 +267,131 @@ export default function Cart() {
                   </div>
                 </div>
 
-                <div className="mb-3">
+                {/* 有圖示的下拉選單 */}
+                <div className="mb-3 position-relative">
                   <label className="form-label text-muted">選擇支付貨幣</label>
-                  <select
-                    className="form-select bg-dark text-white border-secondary"
-                    value={targetCurrency}
-                    onChange={(e) => setTargetCurrency(e.target.value)}
+
+                  <button
+                    type="button"
+                    className="btn d-flex justify-content-between align-items-center w-100 bg-dark text-white border-secondary"
+                    style={{
+                      textAlign: 'left',
+                      height: '35px',
+                      paddingLeft: '12px',
+                      paddingRight: '12px'
+                    }}
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   >
-                    <option value="新台幣">🇹🇼 新台幣 (NTD)</option>
-                    <option value="神聖石">🌟 神聖石 (Divine Orb)</option>
-                    <option value="混沌石">🌑 混沌石 (Chaos Orb)</option>
-                    <option value="崇高石">👑 崇高石 (Exalted Orb)</option>
-                  </select>
+                    <div className="d-flex align-items-center overflow-hidden">
+                      {/* 圖示區 */}
+                      <span className="me-2 d-flex align-items-center" style={{ width: '24px', justifyContent: 'center', lineHeight: 0 }}>
+                        {targetCurrency === "新台幣" ? (
+                          <span style={{ fontSize: '1.2rem' }}>🇹🇼</span>
+                        ) : (
+                          // 用 div 包裹並強制隱藏多餘文字
+                          <div style={{ width: '24px', overflow: 'hidden', display: 'flex', justifyContent: 'center' }}>
+                            <CurrencyDisplay price={0} unit={targetCurrency} style={{ fontSize: '0px' }} />
+                          </div>
+                        )}
+                      </span>
+
+                      {/* 文字區 */}
+                      <span className="text-truncate">
+                        {currencyOptions.find(c => c.value === targetCurrency)?.label || targetCurrency}
+                      </span>
+                    </div>
+
+                    <i className={`bi bi-chevron-down small text-muted transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}></i>
+                  </button>
+
+                  {isDropdownOpen && (
+                    <div className="card position-absolute w-100 shadow-lg border-secondary mt-1 bg-dark" style={{ zIndex: 1050 }}>
+                      <ul className="list-group list-group-flush">
+                        {currencyOptions.map((option) => (
+                          <li key={option.value} className="list-group-item bg-dark border-secondary p-0">
+                            <button
+                              type="button"
+                              className="btn w-100 text-start text-white d-flex align-items-center px-3 py-2"
+                              onMouseEnter={(e) => e.currentTarget.classList.add('bg-secondary')}
+                              onMouseLeave={(e) => e.currentTarget.classList.remove('bg-secondary')}
+                              onClick={() => {
+                                setTargetCurrency(option.value);
+                                setIsDropdownOpen(false);
+                              }}
+                            >
+                              <span className="me-2 d-flex align-items-center" style={{ width: '24px', justifyContent: 'center' }}>
+                                {option.type === 'flag' ? (
+                                  <span style={{ fontSize: '1.2rem' }}>{option.icon}</span>
+                                ) : (
+                                  <div style={{ width: '24px', overflow: 'hidden', display: 'flex', justifyContent: 'center' }}>
+                                    <CurrencyDisplay price={0} unit={option.value} style={{ fontSize: '0px' }} />
+                                  </div>
+                                )}
+                              </span>
+                              {option.label}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
+                {/* 動態交易說明 */}
+                <div className="alert alert-secondary border-0 small mt-3">
+                  <h6 className="fw-bold mb-2"><i className="bi bi-info-circle me-1"></i>交易須知：</h6>
+                  {targetCurrency === "新台幣" ? (
+                    // 顯示銀行匯款資訊
+                    <div className="lh-sm">
+                      <p className="mb-1"><strong>銀行匯款</strong></p>
+                      <p className="mb-1">銀行名稱：玉山銀行 (東台南分行)</p>
+                      <p className="mb-1">帳號：0761-976-056514</p>
+                      <p className="mb-2">戶名：陳宗葆</p>
+                      <hr className="my-1 border-secondary" />
+                      <p className="mb-1 text-danger">※ 匯款完成後，請將匯款帳號末五碼回報，以便我們對帳確認。</p>
+                      <p className="mb-0">請加我好友：<span className="text-primary">blueskycm#0594</span>，到我的藏身處交易</p>
+                    </div>
+                  ) : (
+                    // 顯示一般遊戲交易資訊
+                    <div className="lh-sm">
+                      <p className="mb-0">請加我好友：<strong className="text-primary">blueskycm#0594</strong>，到我的藏身處交易</p>
+                    </div>
+                  )}
                 </div>
 
                 <hr className="border-secondary" />
 
+                {/* 總計顯示 */}
                 <div className="d-flex justify-content-between align-items-center mb-4">
                   <span className="h5 mb-0">總計：</span>
                   <div className="text-end">
-                    <span className="h2 fw-bold text-warning d-block mb-0">
-                      {targetCurrency === "新台幣" ? "NT$ " : ""}
-                      {cartTotalValue.raw}
-                      {cartTotalValue.raw !== cartTotalValue.ceil && (
-                        <span className="text-white fs-5 ms-2 opacity-75">
-                          ({cartTotalValue.ceil})
-                        </span>
-                      )}
-                    </span>
+                    {targetCurrency === "新台幣" ? (
+                      // 台幣：純文字
+                      <span className="h2 fw-bold text-success d-block mb-0">
+                        NT$ {cartTotalValue.raw}
+                        {cartTotalValue.raw !== cartTotalValue.ceil && (
+                          <span className="text-white fs-5 ms-2 opacity-75">
+                            ({cartTotalValue.ceil})
+                          </span>
+                        )}
+                      </span>
+                    ) : (
+                      // 遊戲幣：使用 CurrencyDisplay 顯示圖示
+                      <div className="d-flex align-items-center justify-content-end">
+                        <CurrencyDisplay
+                          price={cartTotalValue.raw}
+                          unit={targetCurrency}
+                          style={{ fontSize: '1.5rem', fontWeight: 'bold' }}
+                        />
+                        {/* 如果有進位，顯示在旁邊 */}
+                        {cartTotalValue.raw !== cartTotalValue.ceil && (
+                          <span className="text-white fs-5 ms-2 opacity-75">
+                            ({cartTotalValue.ceil})
+                          </span>
+                        )}
+                      </div>
+                    )}
+
                     <small className="text-muted">
                       {targetCurrency}
                       {cartTotalValue.raw !== cartTotalValue.ceil && " (實收)"}
@@ -284,7 +399,6 @@ export default function Cart() {
                   </div>
                 </div>
 
-                {/* 傳遞 State 給 Checkout */}
                 <Link
                   to="/week6/checkout"
                   state={{
