@@ -3,30 +3,30 @@ import CurrencyDisplay from "./CurrencyDisplay";
 import { rarityMap } from "../utils/constants";
 
 const ProductDetail = ({ selectedProduct }) => {
-  
+
   const formatTitle = (title) => title ? title.replace(/\\n/g, '\n') : "";
 
   return (
-    <div className="col-lg-6" style={{ minWidth: 0 }}>
-      <div className="card shadow-sm border-0 h-100">
+    <div className="h-100">
+      <div className="card shadow-sm border-0 h-100 bg-transparent">
         <div className="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
           <h4 className="mb-0">商品卡片預覽</h4>
         </div>
         <div className="card-body">
           {selectedProduct ? (
             <div className="card mb-3 w-100 border-secondary">
-              <img 
-                src={selectedProduct.imageUrl} 
-                className="card-img-top primary-image bg-dark" 
-                alt={selectedProduct.title} 
-                style={{ height: '300px', objectFit: 'contain', width: '100%' }} 
+              <img
+                src={selectedProduct.imageUrl}
+                className="card-img-top primary-image bg-dark"
+                alt={selectedProduct.title}
+                style={{ height: '300px', objectFit: 'contain', width: '100%' }}
               />
               <div className="card-body">
                 <h5 className="card-title mb-2 d-flex align-items-center">
-                    <div style={{ whiteSpace: 'pre-line' }}>{formatTitle(selectedProduct.title)}</div>
-                    <span className="badge ms-2" style={{ backgroundColor: (rarityMap[selectedProduct.rarity] || rarityMap.Normal).color, color: (rarityMap[selectedProduct.rarity] || rarityMap.Normal).textColor, border: '1px solid #333' }}>
-                      {selectedProduct.category}
-                    </span>
+                  <div style={{ whiteSpace: 'pre-line' }}>{formatTitle(selectedProduct.title)}</div>
+                  <span className="badge ms-2" style={{ backgroundColor: (rarityMap[selectedProduct.rarity] || rarityMap.Normal).color, color: (rarityMap[selectedProduct.rarity] || rarityMap.Normal).textColor, border: '1px solid #333' }}>
+                    {selectedProduct.category}
+                  </span>
                 </h5>
                 <p className="card-text">
                   物品稀有度：

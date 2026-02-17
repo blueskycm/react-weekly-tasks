@@ -3,21 +3,21 @@ import CurrencyDisplay from "./CurrencyDisplay";
 import Pagination from "./Pagination";
 import { rarityMap } from "../utils/constants";
 
-const ProductTable = ({ 
-  products, 
-  pageInfo, 
-  handlePageChange, 
-  openProductModal, 
-  openDeleteModal, 
-  selectedProduct, 
-  setSelectedProduct 
+const ProductTable = ({
+  products,
+  pageInfo,
+  handlePageChange,
+  openProductModal,
+  openDeleteModal,
+  selectedProduct,
+  setSelectedProduct
 }) => {
-  
+
   // 格式化
   const formatTitle = (title) => title ? title.replace(/\\n/g, '\n') : "";
 
   return (
-    <div className="col-lg-6 mb-3" style={{ minWidth: 0 }}>
+    <div className="h-100" style={{ minWidth: 0 }}>
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h2>商品列表</h2>
         <div>
@@ -80,7 +80,7 @@ const ProductTable = ({
           </tbody>
         </table>
       </div>
-      
+
       {/* 分頁資訊與元件 */}
       <p className="text-white-50 text-muted-dark mb-3">
         本頁顯示 {products.length} 筆資料，

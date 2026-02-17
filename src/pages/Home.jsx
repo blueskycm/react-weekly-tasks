@@ -10,6 +10,9 @@ const weeksData = [
   // Week 6
   { id: 'week6', title: 'Week 6 (交易所)', path: '/week6', description: '前台購物車系統' },
   { id: 'week6-admin', title: 'Week 6 (後台)', path: '/week6/admin', description: '後台管理介面 (進階)' },
+  // Week 7
+  { id: 'week7', title: 'Week 7 (Redux)', path: '/week7', description: '全域狀態管理 (交易所)' },
+  { id: 'week7-admin', title: 'Week 7 (後台)', path: '/week7/admin', description: 'Redux 通知系統與後台' },
 ];
 
 export default function Home() {

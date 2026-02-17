@@ -30,6 +30,15 @@ import Week6Admin from '../pages/week6/Admin';
 import AdminExchange from '../pages/week6/AdminExchange';
 import Exchange from '../pages/week6/Exchange';
 
+// Week 7
+import Week7Home from '../pages/week7/Home';
+import Week7Products from '../pages/week7/Products';
+import Week7ProductDetail from '../pages/week7/ProductDetail';
+import Week7Cart from '../pages/week7/Cart';
+import Week7Checkout from '../pages/week7/Checkout';
+import Week7Admin from '../pages/week7/Admin';
+import Week7AdminExchange from '../pages/week7/AdminExchange';
+
 // 404
 import NotFound from '../pages/NotFound';
 
@@ -79,6 +88,25 @@ const router = createHashRouter([
           { path: 'checkout', element: <Week6Checkout /> },
         ]
       },
+      // === Week 7 ===
+      {
+        path: 'week7',
+        element: <FrontLayout />,
+        children: [
+          // 前台頁面
+          { index: true, element: <Week7Home /> },
+          { path: 'products', element: <Week7Products /> },
+          { path: 'products/:id', element: <Week7ProductDetail /> },
+          { path: 'cart', element: <Week7Cart /> },
+          { path: 'checkout', element: <Week7Checkout /> },
+
+          // 後台頁面
+          { path: 'admin', element: <Week7Admin /> },
+          { path: 'admin/exchange', element: <Week7AdminExchange /> },
+        ],
+      },
+
+      // 404 頁面 (永遠放在最後)
       { path: '*', element: <NotFound /> },
     ]
   }

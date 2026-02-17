@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
+import Toast from './components/Toast';
 
 function App() {
   useEffect(() => {
@@ -15,6 +16,7 @@ function App() {
 
   return (
     <>
+      <Toast />
       <Outlet />
     </>
   );
