@@ -13,6 +13,10 @@ const weeksData = [
   // Week 7
   { id: 'week7', title: 'Week 7 (Redux)', path: '/week7', description: '全域狀態管理 (交易所)' },
   { id: 'week7-admin', title: 'Week 7 (後台)', path: '/week7/admin', description: 'Redux 通知系統與後台' },
+
+  // final
+  { id: 'final', title: '🌟 最終專案 (前台)', path: '/final', description: '阿葆的 POE2 秘密商場', tagText: '進入商場' },
+  { id: 'final-admin', title: '🌟 最終專案 (後台)', path: '/final/admin', description: '商場後台管理系統', tagText: '進入後台' },
 ];
 
 export default function Home() {

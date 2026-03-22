@@ -39,6 +39,16 @@ import Week7Checkout from '../pages/week7/Checkout';
 import Week7Admin from '../pages/week7/Admin';
 import Week7AdminExchange from '../pages/week7/AdminExchange';
 
+// final
+import FinalHome from '../pages/final/Home';
+import FinalProducts from '../pages/final/Products';
+import FinalProductDetail from '../pages/final/ProductDetail';
+import FinalCart from '../pages/final/Cart';
+import FinalCheckout from '../pages/final/Checkout';
+import FinalExchange from '../pages/final/Exchange';
+import FinalAdmin from '../pages/final/Admin';
+import FinalAdminExchange from '../pages/final/AdminExchange';
+
 // 404
 import NotFound from '../pages/NotFound';
 
@@ -103,6 +113,25 @@ const router = createHashRouter([
           // 後台頁面
           { path: 'admin', element: <Week7Admin /> },
           { path: 'admin/exchange', element: <Week7AdminExchange /> },
+        ],
+      },
+
+      // final
+      {
+        path: 'final',
+        element: <FrontLayout />,
+        children: [
+          // 前台頁面
+          { index: true, element: <FinalHome /> },
+          { path: 'products', element: <FinalProducts /> },
+          { path: 'products/:id', element: <FinalProductDetail /> },
+          { path: 'cart', element: <FinalCart /> },
+          { path: 'checkout', element: <FinalCheckout /> },
+          { path: 'exchange', element: <FinalExchange /> },
+
+          // 後台頁面
+          { path: 'admin', element: <FinalAdmin /> },
+          { path: 'admin/exchange', element: <FinalAdminExchange /> },
         ],
       },
 

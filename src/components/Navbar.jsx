@@ -13,10 +13,10 @@ export default function Navbar() {
   const location = useLocation();
 
   const routes = [
-    { path: "/week6", name: "商場首頁" },
-    { path: "/week6/products", name: "產品列表" },
-    { path: "/week6/cart", name: "購物車" },
-    { path: "/week6/exchange", name: "匯率計算機" },
+    { path: "/final", name: "商場首頁" },
+    { path: "/final/products", name: "產品列表" },
+    { path: "/final/cart", name: "購物車" },
+    { path: "/final/exchange", name: "匯率計算機" },
   ];
 
   // 定義取得購物車數量的函式
@@ -56,12 +56,12 @@ export default function Navbar() {
                 <NavLink
                   className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
                   to={route.path}
-                  end={route.path === "/week6"}
+                  end={route.path === "/final"}
                 >
                   {route.name}
 
                   {/* 6. 特別判斷：如果是「購物車」按鈕，後面多加一個括號數字 */}
-                  {route.path === "/week6/cart" && (
+                  {route.path === "/final/cart" && (
                     <span className="ms-1">
                       (
                       <span className={cartCount > 0 ? "text-warning fw-bold" : ""}>
