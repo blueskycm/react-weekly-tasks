@@ -182,13 +182,13 @@ export default function Home() {
                   <small className="text-muted ms-3 text-nowrap">2026-03-18</small>
                 </Link>
 
-                {/* 公告 3：官方情報 (把你說的最後一篇新聞拿來用) */}
-                <a href="https://pathofexile.tw/" target="_blank" rel="noreferrer" className="list-group-item list-group-item-action bg-transparent text-light border-secondary d-flex align-items-center py-3 hover-bg-light-subtle">
+                {/* 公告 3：官方情報 */}
+                <a href="https://www.pathofexile.com/forum/view-thread/3923370" target="_blank" rel="noreferrer" className="list-group-item list-group-item-action bg-transparent text-light border-secondary d-flex align-items-center py-3 hover-bg-light-subtle">
                   <span className="badge bg-primary me-3 px-2 py-1">情報</span>
                   <div className="flex-grow-1 text-truncate">
-                    【官方更新】POE2 1.26 季中更新上線，部分傳奇裝備價格將有波動預警。
+                    【官方活動】The Last of the Druids set of races is starting soon!
                   </div>
-                  <small className="text-muted ms-3 text-nowrap">2026-01-26</small>
+                  <small className="text-muted ms-3 text-nowrap">2026-03-23</small>
                 </a>
 
               </div>

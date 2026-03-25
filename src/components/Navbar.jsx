@@ -6,10 +6,7 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
 
 export default function Navbar() {
-  // 新增購物車數量狀態
   const [cartCount, setCartCount] = useState(0);
-
-  // 使用 useLocation 來監聽目前的頁面路徑
   const location = useLocation();
 
   const routes = [
@@ -19,19 +16,16 @@ export default function Navbar() {
     { path: "/final/exchange", name: "匯率計算機" },
   ];
 
-  // 定義取得購物車數量的函式
-  const getCartCount = async () => {
-    try {
-      const res = await axios.get(`${BASE_URL}/api/${API_PATH}/cart`);
-      // carts.length 代表有多少「種」商品
-      setCartCount(res.data.data.carts.length);
-    } catch (error) {
-      console.error("取得購物車失敗", error);
-    }
-  };
-
-  // 當網址改變時，重新抓取數量
   useEffect(() => {
+    const getCartCount = async () => {
+      try {
+        const res = await axios.get(`${BASE_URL}/api/${API_PATH}/cart`);
+        setCartCount(res.data.data.carts.length);
+      } catch (error) {
+        console.error("取得購物車失敗", error);
+      }
+    };
+
     getCartCount();
   }, [location]);
 
@@ -60,7 +54,6 @@ export default function Navbar() {
                 >
                   {route.name}
 
-                  {/* 6. 特別判斷：如果是「購物車」按鈕，後面多加一個括號數字 */}
                   {route.path === "/final/cart" && (
                     <span className="ms-1">
                       (
@@ -70,7 +63,6 @@ export default function Navbar() {
                       )
                     </span>
                   )}
-
                 </NavLink>
               </li>
             ))}
