@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
-// 匯入
+
 import ProductModal from "../../components/ProductModal";
 import DeleteModal from "../../components/DeleteModal";
 import Login from "../../components/Login";
@@ -38,30 +38,27 @@ function FinalAdmin() {
   const checkAdmin = async () => {
     try {
       const token = document.cookie.replace(/(?:(?:^|.*;\s*)hexToken\s*=\s*([^;]*).*$)|^.*$/, "$1");
-      // 如果連 token 都沒有，直接視為未登入，結束 loading
       if (!token) {
         setIsAuth(false);
-        setIsLoading(false); // 結束讀取
+        setIsLoading(false);
         return;
       }
 
       axios.defaults.headers.common['Authorization'] = token;
-
       await axios.post(`${API_BASE}/api/user/check`);
 
-      // 驗證成功
       setIsAuth(true);
-      getData(); // 取得產品列表
+      getData();
 
-    } catch (err) {
-      // 驗證失敗
+    } catch (error) {
+      console.error(error);
       setIsAuth(false);
     } finally {
-      // 無論成功或失敗，最後都要把 Loading 關掉
       setIsLoading(false);
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { checkAdmin(); }, []);
 
   const getData = async (page = 1) => {
@@ -70,7 +67,6 @@ function FinalAdmin() {
       const productsArray = Object.values(res.data.products);
       const processedProducts = productsArray.map(product => {
         try {
-          // 嘗試把 content 解析成 JSON
           const customData = JSON.parse(product.content);
           return {
             ...product,
@@ -79,13 +75,11 @@ function FinalAdmin() {
             content: customData.note || '',
             isDeleted: customData.isDeleted || false
           };
-        } catch (e) {
-          // 如果是舊資料或解析失敗，給預設值
+        } catch (error) {
+          console.error(error); // ✅ 解決 'e' defined but never used
           return { ...product, quantity: 1, isDeleted: false };
         }
-      })
-        // 只保留沒有被標記為刪除的商品
-        .filter(product => !product.isDeleted);
+      }).filter(product => !product.isDeleted);
 
       setProducts(processedProducts);
       setPageInfo(res.data.pagination);
@@ -98,7 +92,6 @@ function FinalAdmin() {
     }
   };
 
-  // --- 登入與其他邏輯 ---
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -124,10 +117,8 @@ function FinalAdmin() {
 
   const handleLogout = () => {
     document.cookie = "hexToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-
     localStorage.removeItem("poe_email");
     setUserEmail("");
-
     setIsAuth(false);
     setProducts([]);
     setSelectedProduct(null);
@@ -150,8 +141,6 @@ function FinalAdmin() {
   const updateProduct = async () => {
     try {
       const cleanImages = (tempProduct.imagesUrl || []).filter(url => url.trim() !== "");
-
-      // 將 rarity, quantity, content 打包成 JSON 字串
       const productToSend = {
         ...tempProduct,
         imagesUrl: cleanImages,
@@ -173,19 +162,12 @@ function FinalAdmin() {
       closeModal();
       getData(pageInfo.current_page);
       if (selectedProduct && selectedProduct.id === tempProduct.id) setSelectedProduct(tempProduct);
-      dispatch(createMessage({
-        success: true,
-        message: modalState.type === 'create' ? "產品已上架" : "產品更新成功"
-      }));
+      dispatch(createMessage({ success: true, message: modalState.type === 'create' ? "產品已上架" : "產品更新成功" }));
     } catch (err) {
-      dispatch(createMessage({
-        success: false,
-        message: err.response?.data?.message || err.message
-      }));
+      dispatch(createMessage({ success: false, message: err.response?.data?.message || err.message }));
     }
   };
 
-  // 軟刪除
   const handleSoftDelete = async () => {
     try {
       const productToTrash = {
@@ -194,44 +176,31 @@ function FinalAdmin() {
           rarity: tempProduct.rarity,
           quantity: tempProduct.quantity,
           note: tempProduct.content,
-          isDeleted: true // 標記為刪除
+          isDeleted: true
         })
       };
-
-      // 使用 PUT 更新
-      await axios.put(`${API_BASE}/api/${API_PATH}/admin/product/${tempProduct.id}`, {
-        data: productToTrash
-      });
-
+      await axios.put(`${API_BASE}/api/${API_PATH}/admin/product/${tempProduct.id}`, { data: productToTrash });
       closeModal();
-      getData(pageInfo.current_page); // 重新整理
+      getData(pageInfo.current_page);
       if (selectedProduct?.id === tempProduct.id) setSelectedProduct(null);
       alert("商品已移至回收桶！(軟刪除)");
-
     } catch (err) {
       alert("移至回收桶失敗: " + err.message);
     }
   };
 
-  // 硬刪除
   const handleHardDelete = async () => {
     try {
-      // 使用 DELETE API 真實刪除
       await axios.delete(`${API_BASE}/api/${API_PATH}/admin/product/${tempProduct.id}`);
-
       closeModal();
-      getData(pageInfo.current_page); // 重新整理
+      getData(pageInfo.current_page);
       if (selectedProduct?.id === tempProduct.id) setSelectedProduct(null);
       alert("商品已永久刪除！(硬刪除)");
-
     } catch (err) {
       alert("刪除失敗: " + err.message);
     }
   };
 
-  const formatTitle = (title) => title ? title.replace(/\\n/g, '\n') : "";
-
-  // 如果正在讀取，顯示 Loading 畫面
   if (isLoading) {
     return (
       <div className="d-flex justify-content-center align-items-center bg-body" style={{ height: '100vh' }}>
@@ -251,30 +220,25 @@ function FinalAdmin() {
         </div>
       ) : (
         <div className="container-fluid py-4 px-4">
-          {/* 頂部 Navbar */}
           <div className="d-flex justify-content-end align-items-center bg-dark text-white p-3 mb-4 rounded shadow-sm gap-3">
-            {/* 回首頁按鈕 */}
             <Link to="/" className="btn btn-outline-light btn-sm d-flex align-items-center gap-1 text-decoration-none">
               <i className="bi bi-house-door-fill"></i> 回首頁
             </Link>
             <Link to="/final/admin/exchange" className="btn btn-outline-warning btn-sm d-flex align-items-center gap-1">
               <i className="bi bi-currency-exchange"></i> 匯率設定
             </Link>
-            {/* 顯示 Email */}
             <div className="d-flex align-items-center text-light">
               <i className="bi bi-envelope-fill me-2 text-warning"></i>
               <span className="fw-bold" style={{ letterSpacing: '0.5px' }}>
                 {userEmail || "管理員"}
               </span>
             </div>
-            {/* 登出按鈕 */}
             <button className="btn btn-outline-danger btn-sm d-flex align-items-center gap-1" onClick={handleLogout}>
               <i className="bi bi-box-arrow-right"></i> 登出
             </button>
           </div>
 
           <div className="row g-4 align-items-start">
-            {/* 左側：商品列表 */}
             <div className="col-md-8">
               <ProductTable
                 products={products}
@@ -286,24 +250,14 @@ function FinalAdmin() {
                 setSelectedProduct={setSelectedProduct}
               />
             </div>
-
-            {/* 右側：商品細節 */}
             <div className="col-md-4 position-sticky" style={{ top: '20px' }}>
               <ProductDetail selectedProduct={selectedProduct} />
             </div>
           </div>
         </div>
       )}
-
-      {/* --- Modal 元件 --- */}
       <ProductModal isOpen={modalState.isOpen && (modalState.type === 'create' || modalState.type === 'edit')} type={modalState.type} tempProduct={tempProduct} setTempProduct={setTempProduct} updateProduct={updateProduct} onClose={closeModal} />
-      <DeleteModal
-        isOpen={modalState.isOpen && modalState.type === 'delete'}
-        product={tempProduct}
-        onSoftDelete={handleSoftDelete}
-        onHardDelete={handleHardDelete}
-        onClose={closeModal}
-      />
+      <DeleteModal isOpen={modalState.isOpen && modalState.type === 'delete'} product={tempProduct} onSoftDelete={handleSoftDelete} onHardDelete={handleHardDelete} onClose={closeModal} />
     </div>
   );
 }

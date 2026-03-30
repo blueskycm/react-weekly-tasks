@@ -16,7 +16,7 @@ export default function Cart() {
 
   // 匯率設定狀態
   const [exchangeRates, setExchangeRates] = useState({
-    "崇高石": 1, // 基準單位
+    "崇高石": 1,
     "神聖石": 0,
     "混沌石": 0,
     "新台幣": 0,
@@ -30,6 +30,9 @@ export default function Cart() {
       // 購物車是在 "lovecraft" 路徑下
       const res = await axios.get(`${BASE_URL}/api/${SHOP_PATH}/cart`);
       setCart(res.data.data);
+
+      window.dispatchEvent(new Event('updateCart'));
+
     } catch (error) {
       console.error("取得購物車失敗", error);
     }
@@ -38,8 +41,7 @@ export default function Cart() {
   // 取得匯率 (使用 EXCHANGE_PATH)
   const getRates = async () => {
     try {
-      // 💱 匯率設定檔是在 "exchange" 路徑下
-      // 注意：這裡我們抓的是 exchange 路徑下的「所有產品」，裡面只有神聖石、混沌石、新台幣
+      // 匯率設定檔是在 "exchange" 路徑下
       const res = await axios.get(`${BASE_URL}/api/${EXCHANGE_PATH}/products/all`);
       const products = res.data.products;
 
@@ -50,10 +52,9 @@ export default function Cart() {
         "新台幣": 5
       };
 
-      // 搜尋設定檔 (這裡不用檢查 category 也可以，因為 exchange 路徑下應該全是設定檔)
       const divine = products.find(p => p.title === "神聖石");
       const chaos = products.find(p => p.title === "混沌石");
-      const ntd = products.find(p => p.title === "新台幣"); // 記得後台要建立這個
+      const ntd = products.find(p => p.title === "新台幣");
 
       if (divine) newRates["神聖石"] = divine.price;
       if (chaos) newRates["混沌石"] = chaos.price;
@@ -82,7 +83,9 @@ export default function Cart() {
       await axios.delete(`${BASE_URL}/api/${SHOP_PATH}/cart/${cartId}`);
       getCart();
     } catch (error) {
+      console.error(error);
       alert("刪除失敗");
+    } finally {
       setIsLoading(false);
     }
   };
@@ -95,7 +98,9 @@ export default function Cart() {
       });
       getCart();
     } catch (error) {
+      console.error(error);
       alert("更新數量失敗");
+    } finally {
       setIsLoading(false);
     }
   };
@@ -106,7 +111,9 @@ export default function Cart() {
       await axios.delete(`${BASE_URL}/api/${SHOP_PATH}/carts`);
       getCart();
     } catch (error) {
+      console.error(error);
       alert("清空購物車失敗");
+    } finally {
       setIsLoading(false);
     }
   };
@@ -176,10 +183,11 @@ export default function Cart() {
                         <td className="ps-4">
                           <div className="d-flex align-items-center">
                             <img
-                              src={item.product.imageUrl}
+                              src={item.product.imageUrl || "https://placehold.co/50x50?text=No+Image"}
                               alt={item.product.title}
                               style={{ width: "50px", height: "50px", objectFit: "contain" }}
                               className="rounded me-3 bg-secondary"
+                              onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/50x50?text=No+Image"; }}
                             />
                             <div>
                               <div className="fw-bold text-truncate" style={{ maxWidth: '150px' }}>

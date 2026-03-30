@@ -12,13 +12,13 @@ export default function ProductDetail() {
   const navigate = useNavigate();
   const [product, setProduct] = useState({});
   const [qty, setQty] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
 
   // 紀錄目前顯示的大圖網址
-  const [displayImage, setDisplayImage] = useState("");
+  const [displayImage, setDisplayImage] = useState(null);
 
-  // 格式化標題 (處理 \n)
+  // 格式化標題
   const formatTitle = (title) => title ? title.replace(/\\n/g, '\n') : "";
 
   useEffect(() => {
@@ -33,7 +33,8 @@ export default function ProductDetail() {
           const customData = JSON.parse(productData.content);
           productData.rarity = customData.rarity || 'Normal';
           productData.note = customData.note || '';
-        } catch (e) {
+        } catch (error) {
+          console.error(error);
           productData.rarity = 'Normal';
           productData.note = productData.content;
         }
@@ -44,6 +45,7 @@ export default function ProductDetail() {
         setDisplayImage(productData.imageUrl);
 
       } catch (error) {
+        console.error(error);
         alert("讀取產品失敗");
         navigate("/final/products");
       } finally {
@@ -63,7 +65,11 @@ export default function ProductDetail() {
         },
       });
       alert("成功加入購物車！");
+
+      window.dispatchEvent(new Event('updateCart'));
+
     } catch (error) {
+      console.error(error);
       alert("加入購物車失敗");
     } finally {
       setIsAdding(false);
@@ -104,7 +110,6 @@ export default function ProductDetail() {
                 className="card-img-top bg-dark"
                 alt={product.title}
                 style={{ height: "400px", objectFit: "contain", width: "100%", transition: 'opacity 0.3s ease-in-out' }}
-                // 如果圖片載入失敗，顯示預設圖或保持原狀
                 onError={(e) => { e.target.onerror = null; e.target.src = product.imageUrl || 'https://placehold.co/400x400?text=No+Image'; }}
               />
 
@@ -116,18 +121,16 @@ export default function ProductDetail() {
                       key={index}
                       src={url}
                       alt={`${product.title} thumbnail ${index + 1}`}
-                      className={`img-thumbnail bg-dark ${displayImage === url ? 'border-primary' : 'border-secondary'}`} // 4️⃣ 視覺回饋：選中時變藍色邊框
+                      className={`img-thumbnail bg-dark ${displayImage === url ? 'border-primary' : 'border-secondary'}`}
                       style={{
                         height: '80px',
                         width: '80px',
                         objectFit: 'cover',
                         cursor: 'pointer',
-                        opacity: displayImage === url ? 1 : 0.7, // 選中時較亮，未選中稍暗
+                        opacity: displayImage === url ? 1 : 0.7,
                         transition: 'all 0.2s'
                       }}
-                      // 點擊事件：更新大圖狀態
                       onClick={() => setDisplayImage(url)}
-                      // hover
                       onMouseEnter={(e) => e.currentTarget.style.opacity = 1}
                       onMouseLeave={(e) => displayImage !== url && (e.currentTarget.style.opacity = 0.7)}
                     />
@@ -187,7 +190,6 @@ export default function ProductDetail() {
 
               <hr />
 
-              {/* 價格與加入購物車區塊 */}
               <div className="p-4 rounded border border-secondary">
                 <div className="d-flex align-items-center mb-3">
                   <span className="h5 mb-0 me-3">售價：</span>

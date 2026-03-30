@@ -34,6 +34,7 @@ export default function AdminExchange() {
       dispatch(createMessage({ success: false, message: "請先登入" }));
       navigate('/login');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getProducts = async () => {

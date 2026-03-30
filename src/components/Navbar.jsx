@@ -26,7 +26,16 @@ export default function Navbar() {
       }
     };
 
+    // 初次載入或網址切換時，執行一次
     getCartCount();
+
+    // 監聽自訂的 'updateCart' 廣播事件
+    window.addEventListener('updateCart', getCartCount);
+
+    // 元件卸載或重新執行前，清除監聽器避免重複綁定
+    return () => {
+      window.removeEventListener('updateCart', getCartCount);
+    };
   }, [location]);
 
   return (

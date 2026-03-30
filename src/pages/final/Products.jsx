@@ -30,6 +30,7 @@ export default function Products() {
             rarity: rarityKey,
           };
         } catch (e) {
+          console.error(e);
           return { ...product, rarity: 'Normal' };
         }
       });
